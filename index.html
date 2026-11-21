@@ -78,6 +78,16 @@ nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card
 nav.tabs button{flex:1;min-width:0;background:none;border:none;padding:10px 2px 12px;font-size:11px;color:var(--muted)}
 nav.tabs button b{display:block;font-size:20px;margin-bottom:2px}
 nav.tabs button.on{color:var(--accent);font-weight:700}
+.pk-seg{display:flex;gap:8px}.pk-seg .btn{flex:1}
+.pk-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--line)}
+.pk-row:first-of-type{border-top:none}
+.pk-row label{color:var(--ink);font-weight:500;margin:0;flex:1;display:flex;align-items:center;gap:10px;font-size:15px;min-width:0;word-break:break-word}
+.pk-row input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--teal)}
+.pk-row.done label span{text-decoration:line-through;color:var(--muted)}
+.pk-ico{background:none;border:1px solid var(--line);border-radius:10px;width:36px;height:36px;flex:none;font-size:15px;color:var(--ink)}
+.pk-head{display:flex;align-items:center;gap:6px}.pk-head h3{flex:1;margin:0}
+.pk-add{display:flex;gap:6px;margin-top:8px}.pk-add input{flex:1;min-width:0}.pk-add .btn{min-width:64px}
+.pk-bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px}.pk-bar i{display:block;height:100%;background:var(--teal)}
 .fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center}
 .sheet.open{display:flex}
@@ -173,12 +183,26 @@ textarea.f{min-height:90px;resize:vertical}
     <div class="hint" style="margin:10px 0">Last checked: 21 Nov 2026.</div>
   </section>
 
+  <!-- PACK -->
+  <section class="section" id="sec-pack">
+    <h2 style="margin:6px 0">Packing Lists</h2>
+    <div class="card">
+      <div class="pk-seg"><button class="btn" data-pklist="gear">🏕️ Camping gear</button><button class="btn" data-pklist="food">🍳 Food</button></div>
+      <div class="pk-bar"><i id="pkBar"></i></div>
+      <div class="hint" id="pkCount"></div>
+      <div class="small-actions"><button class="btn" data-pk="untick">Untick all</button><button class="btn" data-pk="addsec">+ Add section</button><button class="btn" data-pk="reset">Reset list</button></div>
+      <div class="small-actions" id="pkUndoRow" style="display:none"><button class="btn accent" data-pk="undo" id="pkUndo">Undo delete</button></div>
+    </div>
+    <div id="pkList"></div>
+    <div class="hint" style="margin:10px 0">Tap ✏️ to rename and ✕ to delete. Your ticks and changes are saved on this phone and included in your backup file.</div>
+  </section>
+
   <!-- SETTINGS -->
   <section class="section" id="sec-more">
     <h2 style="margin:6px 0">Backup & Settings</h2>
     <div class="card">
       <h3>Backup your spots</h3>
-      <div class="hint">Your spots are saved on this phone only. Download a backup file now and then, and use it to move your list to a new phone or share it.</div>
+      <div class="hint">Your spots and packing lists are saved on this phone only. Download a backup file now and then, and use it to move your list to a new phone or share it.</div>
       <div class="small-actions">
         <button class="btn primary" id="exportBtn">Download backup</button>
         <button class="btn" id="importBtn">Restore from backup</button>
@@ -226,6 +250,7 @@ textarea.f{min-height:90px;resize:vertical}
   <button data-tab="maps"><b>🗺️</b>Maps</button>
   <button data-tab="names"><b>📖</b>Names</button>
   <button data-tab="events"><b>🎉</b>Events</button>
+  <button data-tab="pack"><b>🎒</b>Pack</button>
   <button data-tab="more"><b>⚙️</b>Backup</button>
 </nav>
 
@@ -693,6 +718,81 @@ function renderRegionMaps(){
   }).join("");
 }
 
+/* ---------- packing lists ---------- */
+var PACK_SEED = {
+  gear: [
+    ["Vehicle",["Full tank, plus spare fuel if going far","Spare tyre, jack and wheel spanner","Tyre pressure gauge","Compressor to pump tyres back up","Shovel","Tow strap","Sand boards","Jump leads","Go with 2 cars if driving off-road"]],
+    ["Water",["More drinking water than you think you need","Extra water for the car"]],
+    ["Camp",["Tent, long sand pegs and mallet","Sleeping bags (desert nights get cold in winter)","Camping mats","Camping chairs","Rug or ground sheet","Shade cover for daytime"]],
+    ["Cooking",["Gas stove and gas, or fire pit with your own charcoal (not local wood)","Lighter and matches","Pot, pan and kettle","Cooking utensils","Plates, cups and cutlery","Bin bags - take all rubbish home"]],
+    ["Light and power",["Headlamps and torches","Spare batteries","Camping lantern","Power bank","Car charger"]],
+    ["Safety",["First aid kit","Personal medicines","Fire extinguisher","Fire blanket","Sunscreen, hats and sunglasses","Closed shoes (shake them out in the morning)","Offline maps downloaded","Tell someone your route and return time"]],
+    ["Clothes",["Warm layers for night","Jacket or fleece","Light long sleeves for day sun","Scarf or buff for dust and wind"]],
+    ["Paperwork",["ID or iqama","Car registration","Nabati camping permit (national parks, pastures, forests)"]],
+    ["Extras",["Wet wipes and toilet paper","Hand sanitiser","Small toilet trowel","Rope and cable ties","Duct tape","Multi-tool"]]
+  ],
+  food: [
+    ["Drinks",["Drinking water","Water for cooking and washing up","Electrolyte sachets","Tea and coffee","Long-life (UHT) milk","Juice or soft drinks"]],
+    ["Breakfast",["Bread or flatbread","Eggs","Cheese or labneh","Honey or jam","Dates","Oats or cereal"]],
+    ["Lunch and dinner",["Marinated chicken or meat (keep in cool box)","Sausages or burgers","Wraps","Rice or pasta","Tinned beans, tuna or chickpeas","Sauces"]],
+    ["Snacks",["Nuts","Crisps and biscuits","Fruit that travels well (apples, oranges)","Cucumber and carrot sticks","Chocolate (keep in cool box)"]],
+    ["Seasoning",["Salt and pepper","Spices","Cooking oil"]],
+    ["Food safety",["Cool box with ice packs","Separate bag or box for raw meat","Chopping board and knife","Washing-up liquid and sponge","Paper towels, foil and zip bags"]]
+  ]
+};
+var PACK_KEY = "saudiSpots.pack.v1", pkCur = "gear", pkUndo = null;
+function pkFresh(name){ var n=0; return PACK_SEED[name].map(function(sec){ return {id:"p"+(++n)+name, title:sec[0], items:sec[1].map(function(t){ return {id:"i"+(++n)+name, t:t, done:false}; })}; }); }
+var pack = (function(){ try{ var d=JSON.parse(localStorage.getItem(PACK_KEY)); if(d&&d.gear&&d.food) return d; }catch(e){} return {gear:pkFresh("gear"), food:pkFresh("food")}; })();
+function pkSave(){ try{ localStorage.setItem(PACK_KEY, JSON.stringify(pack)); }catch(e){} }
+function pkId(){ return "u"+Date.now().toString(36)+Math.floor(Math.random()*1000); }
+function pkFind(sid, iid){ var L=pack[pkCur], sec=null, item=null, si=-1, ii=-1; for(var a=0;a<L.length;a++) if(L[a].id===sid){ sec=L[a]; si=a; } if(sec&&iid){ for(var b=0;b<sec.items.length;b++) if(sec.items[b].id===iid){ item=sec.items[b]; ii=b; } } return {sec:sec,item:item,si:si,ii:ii}; }
+function renderPack(){
+  var segs=document.querySelectorAll("[data-pklist]"); for(var i=0;i<segs.length;i++) segs[i].className="btn"+(segs[i].dataset.pklist===pkCur?" primary":"");
+  var L=pack[pkCur], tot=0, done=0;
+  $("pkList").innerHTML = L.map(function(sec){
+    var d=0; sec.items.forEach(function(it){ tot++; if(it.done){ done++; d++; } });
+    return '<div class="card"><div class="pk-head"><h3>'+esc(sec.title)+' <span class="hint">'+d+'/'+sec.items.length+'</span></h3>'+
+      '<button class="pk-ico" data-pk="rensec" data-sid="'+sec.id+'" aria-label="Rename section">✏️</button><button class="pk-ico" data-pk="delsec" data-sid="'+sec.id+'" aria-label="Delete section">✕</button></div>'+
+      sec.items.map(function(it){ return '<div class="pk-row'+(it.done?" done":"")+'"><label><input type="checkbox" data-pkchk="1" data-sid="'+sec.id+'" data-iid="'+it.id+'"'+(it.done?" checked":"")+'><span>'+esc(it.t)+'</span></label>'+
+        '<button class="pk-ico" data-pk="ren" data-sid="'+sec.id+'" data-iid="'+it.id+'" aria-label="Rename item">✏️</button><button class="pk-ico" data-pk="del" data-sid="'+sec.id+'" data-iid="'+it.id+'" aria-label="Delete item">✕</button></div>'; }).join("")+
+      '<form class="pk-add" data-sid="'+sec.id+'"><input class="f" placeholder="Add an item" enterkeyhint="done"><button class="btn primary" type="submit">Add</button></form></div>';
+  }).join("") || '<div class="card"><div class="hint">This list is empty. Tap "+ Add section" or "Reset list".</div></div>';
+  $("pkCount").textContent = done+" of "+tot+" packed";
+  $("pkBar").style.width = (tot? Math.round(done/tot*100):0)+"%";
+  $("pkUndoRow").style.display = pkUndo&&pkUndo.list===pkCur ? "" : "none";
+  if (pkUndo) $("pkUndo").textContent = "Undo delete: "+(pkUndo.item?pkUndo.item.t:pkUndo.sec.title);
+}
+document.addEventListener("change", function(e){
+  var c=e.target; if(!c.dataset||!c.dataset.pkchk) return;
+  var f=pkFind(c.dataset.sid, c.dataset.iid); if(!f.item) return;
+  f.item.done=c.checked; pkSave(); renderPack();
+});
+document.addEventListener("submit", function(e){
+  var fm=e.target; if(!fm.classList||!fm.classList.contains("pk-add")) return;
+  e.preventDefault(); var inp=fm.querySelector("input"), v=inp.value.trim(); if(!v) return;
+  var f=pkFind(fm.dataset.sid); if(!f.sec) return;
+  f.sec.items.push({id:pkId(), t:v, done:false}); pkSave(); renderPack(); toast("Added");
+  var again=document.querySelector('.pk-add[data-sid="'+fm.dataset.sid+'"] input'); if(again) again.focus();
+});
+document.addEventListener("click", function(e){
+  var t=e.target.closest?e.target.closest("[data-pk],[data-pklist]"):null; if(!t) return;
+  if (t.dataset.pklist){ pkCur=t.dataset.pklist; renderPack(); return; }
+  var a=t.dataset.pk, f=pkFind(t.dataset.sid, t.dataset.iid), v;
+  if (a==="untick"){ pack[pkCur].forEach(function(s){ s.items.forEach(function(it){ it.done=false; }); }); pkSave(); renderPack(); toast("All unticked"); }
+  else if (a==="addsec"){ v=prompt("Name of the new section:"); if(v&&v.trim()){ pack[pkCur].push({id:pkId(), title:v.trim(), items:[]}); pkSave(); renderPack(); } }
+  else if (a==="reset"){ if(confirm("Put back the original "+(pkCur==="gear"?"camping gear":"food")+" list? Your changes to this list will be lost.")){ pack[pkCur]=pkFresh(pkCur); pkUndo=null; pkSave(); renderPack(); toast("Original list restored"); } }
+  else if (a==="rensec" && f.sec){ v=prompt("Rename section:", f.sec.title); if(v&&v.trim()){ f.sec.title=v.trim(); pkSave(); renderPack(); } }
+  else if (a==="ren" && f.item){ v=prompt("Rename item:", f.item.t); if(v&&v.trim()){ f.item.t=v.trim(); pkSave(); renderPack(); } }
+  else if (a==="delsec" && f.sec){ if(confirm('Delete the section "'+f.sec.title+'" and all its items?')){ pkUndo={list:pkCur, sec:f.sec, si:f.si}; pack[pkCur].splice(f.si,1); pkSave(); renderPack(); } }
+  else if (a==="del" && f.item){ pkUndo={list:pkCur, sid:f.sec.id, item:f.item, ii:f.ii}; f.sec.items.splice(f.ii,1); pkSave(); renderPack(); }
+  else if (a==="undo" && pkUndo){
+    var u=pkUndo; pkCur=u.list;
+    if (u.item){ var g=pkFind(u.sid); if(g.sec) g.sec.items.splice(u.ii,0,u.item); }
+    else pack[pkCur].splice(u.si,0,u.sec);
+    pkUndo=null; pkSave(); renderPack(); toast("Restored");
+  }
+});
+
 /* ---------- form ---------- */
 function drawFormStars(){
   var h="";
@@ -865,7 +965,7 @@ $("eLink").addEventListener("input", function(){
 
 /* backup */
 $("exportBtn").addEventListener("click", function(){
-  var blob = new Blob([JSON.stringify({app:"Saudi Spots",version:1,exported:new Date().toISOString(),spots:spots},null,2)],{type:"application/json"});
+  var blob = new Blob([JSON.stringify({app:"Saudi Spots",version:1,exported:new Date().toISOString(),spots:spots,pack:pack},null,2)],{type:"application/json"});
   var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="saudi-spots-backup-"+new Date().toISOString().slice(0,10)+".json";
   document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href); document.body.removeChild(a);},500);
   toast("Backup downloaded");
@@ -880,6 +980,7 @@ $("importFile").addEventListener("change", function(){
       if (Object.prototype.toString.call(arr)!=="[object Array]") throw 0;
       var added=0, updated=0;
       arr.forEach(function(x){ if(!x||!x.name) return; var ex=x.id?find(x.id):null; if(ex){ for(var k in x) ex[k]=x[k]; updated++; } else { x.id=x.id||("u"+Date.now()+added); spots.push(base(x)); added++; } });
+      if (d.pack&&d.pack.gear&&d.pack.food){ pack=d.pack; pkSave(); renderPack(); }
       save(); render(); toast(added+" added, "+updated+" updated");
     }catch(e){ toast("That file is not a Saudi Spots backup"); }
   };
@@ -902,7 +1003,7 @@ fillSelect($("eCat"), CATS); fillSelect($("eReg"), REGIONS); fillSelect($("eAcce
 fillSelect($("eFamily"), FAMILY); fillSelect($("eSeason"), SEASONS); fillSelect($("eStatus"), STATUS);
 $("unitSel").value = prefs.unit || "km";
 document.addEventListener("click", function(e){ var b=e.target.closest&&e.target.closest("#eStars .star"); if(b){ e.preventDefault(); } }, true);
-applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); renderNames(); renderEvents(); render(); save();
+applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); renderNames(); renderEvents(); renderPack(); render(); save();
 })();
 </script>
 </body>
