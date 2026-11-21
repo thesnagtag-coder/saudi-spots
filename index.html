@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF8F3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Saudi Spots">
+<title>Saudi Spots</title>
+<style>
+:root{
+  --bg:#FBF8F3; --card:#FFFFFF; --ink:#2A2420; --muted:#7A6E64; --line:#EAE2D7;
+  --accent:#B5562F; --accent-soft:#F6E6DC; --teal:#1F6F6B; --teal-soft:#DDEEEC;
+  --gold:#D99A1E; --shadow:0 1px 3px rgba(60,40,20,.08);
+}
+[data-theme="dark"]{
+  --bg:#1C1916; --card:#26221E; --ink:#F2ECE4; --muted:#B3A79A; --line:#3A342E;
+  --accent:#E07B4F; --accent-soft:#3A2A22; --teal:#5BB5AE; --teal-soft:#1F3533;
+  --gold:#F0B43C; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--teal)}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:22px;margin:0;letter-spacing:.2px}
+h1 span{color:var(--accent)}
+.sub{font-size:13px;color:var(--muted)}
+.iconbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;min-width:44px;height:44px;font-size:18px}
+.wrap{max-width:760px;margin:0 auto;padding:12px 14px}
+.search{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);margin-top:10px;font-size:16px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:14px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row{display:flex;gap:8px;margin-top:8px}
+.row select{flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:var(--shadow)}
+.card h3{margin:0 0 4px;font-size:18px}
+.meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.badge{display:inline-block;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-weight:600}
+.badge.warm{background:var(--accent-soft);color:var(--accent)}
+.badge.grey{background:var(--line);color:var(--muted)}
+.stars{display:flex;gap:2px;margin:8px 0 4px}
+.star{background:none;border:none;font-size:26px;line-height:1;padding:2px;color:var(--line)}
+.star.on{color:var(--gold)}
+.note{font-size:14px;margin:6px 0;white-space:pre-wrap}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 8px;font-size:14px;font-weight:600;text-align:center;text-decoration:none;color:var(--ink);display:block}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn[disabled]{opacity:.45}
+.small-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.small-actions .btn{flex:1;font-weight:500;padding:9px 6px;font-size:13px}
+#list{padding-bottom:70px}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;background:none;border:none;padding:10px 4px 12px;font-size:12px;color:var(--muted)}
+nav.tabs button b{display:block;font-size:20px;margin-bottom:2px}
+nav.tabs button.on{color:var(--accent);font-weight:700}
+.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.panel{background:var(--bg);width:100%;max-width:760px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:22px 22px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+.panel h2{margin:4px 0 12px;font-size:20px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+.f{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:16px}
+textarea.f{min-height:90px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{margin:0;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:500;color:var(--ink)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.ok{color:var(--teal);font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;display:none;max-width:90%;text-align:center}
+.section{display:none}.section.on{display:block}
+.maplink{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.info{font-size:14px;background:var(--teal-soft);border-radius:14px;padding:12px;margin:10px 0}
+.danger{color:#B3261E;border-color:#E8C4C0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div>
+      <h1>Saudi <span>Spots</span></h1>
+      <div class="sub" id="countLine"></div>
+    </div>
+    <button class="iconbtn" id="themeBtn" aria-label="Switch light or dark mode">☀️</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- SPOTS -->
+  <section class="section on" id="sec-spots">
+    <input class="search" id="q" type="search" placeholder="Search name, notes, region..." autocomplete="off">
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <select id="fCat" aria-label="Category"></select>
+      <select id="fReg" aria-label="Region"></select>
+    </div>
+    <div class="row">
+      <select id="fSort" aria-label="Sort">
+        <option value="name">Sort: A to Z</option>
+        <option value="rating">Sort: Top rated</option>
+        <option value="near">Sort: Nearest to me</option>
+        <option value="new">Sort: Newest added</option>
+      </select>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <!-- REGION MAPS -->
+  <section class="section" id="sec-maps">
+    <h2 style="margin:6px 0">Wilderness Maps by Region</h2>
+    <div class="info">Google Maps layers by region showing mountains, valleys, rawdahs (green desert basins), wells and historical sites. Compiled by traveller Abdulmohsen bin Omar Al Mahmoud Al Sharif. These are old short links - some may no longer open.</div>
+    <div id="regionMaps"></div>
+    <h2 style="margin:18px 0 6px">Events in the city</h2>
+    <div class="card maplink"><div><b>What's On Saudi Arabia</b><div class="hint">whatsonsaudiarabia.com</div></div><a class="btn primary" style="min-width:90px" href="https://whatsonsaudiarabia.com/" target="_blank" rel="noopener">Open</a></div>
+    <div class="card maplink"><div><b>Time Out Riyadh</b><div class="hint">timeoutriyadh.com</div></div><a class="btn primary" style="min-width:90px" href="https://www.timeoutriyadh.com/" target="_blank" rel="noopener">Open</a></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="section" id="sec-more">
+    <h2 style="margin:6px 0">Backup & Settings</h2>
+    <div class="card">
+      <h3>Backup your spots</h3>
+      <div class="hint">Your spots are saved on this phone only. Download a backup file now and then, and use it to move your list to a new phone or share it.</div>
+      <div class="small-actions">
+        <button class="btn primary" id="exportBtn">Download backup</button>
+        <button class="btn" id="importBtn">Restore from backup</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+      </div>
+    </div>
+    <div class="card">
+      <h3>Camping rules</h3>
+      <div class="note">• Camping in national parks, natural pastures and forests needs a permit from the NCVC "Nabati" platform. Camping there without one can be fined.
+• One camping permit per person per season.
+• Leave the site clean, drive only on marked tracks, and don't burn local wood or charcoal.
+• Before any desert trip: tell someone your route and return time, go with 2 cars if possible, carry extra water, and download offline maps.
+• How busy each campsite is has not been checked - add your own notes after each visit.</div>
+      <div class="small-actions"><a class="btn" href="https://www.spa.gov.sa/en/N2422760" target="_blank" rel="noopener">Source: Saudi Press Agency</a></div>
+    </div>
+    <div class="card">
+      <h3>Using it in the car</h3>
+      <div class="note">Tap <b>Google</b>, <b>Waze</b> or <b>Apple</b> (iPhone only) on any spot. The route opens in that maps app on your phone. If your car has Apple CarPlay or Android Auto, that maps app shows on the car screen as usual.</div>
+      <div class="note">Waze and Apple buttons need exact GPS. Spots with only a link or plus code open in Google Maps.</div>
+    </div>
+    <div class="card">
+      <h3>Put it on your home screen</h3>
+      <div class="note"><b>iPhone (Safari):</b> Share button, then "Add to Home Screen".
+<b>Android (Chrome):</b> menu (three dots), then "Add to Home screen" or "Install app".</div>
+    </div>
+    <div class="card">
+      <h3>Units</h3>
+      <select class="f" id="unitSel">
+        <option value="km">Kilometres first - km (mi)</option>
+        <option value="mi">Miles first - mi (km)</option>
+      </select>
+    </div>
+    <div class="card">
+      <h3>Reset</h3>
+      <div class="hint">Puts back the starter list. Your own changes will be lost - download a backup first.</div>
+      <div class="small-actions"><button class="btn danger" id="resetBtn">Reset to starter list</button></div>
+    </div>
+  </section>
+</div>
+
+<button class="fab" id="addBtn">+ Add spot</button>
+
+<nav class="tabs">
+  <button class="on" data-tab="spots"><b>📍</b>Spots</button>
+  <button data-tab="maps"><b>🗺️</b>Region maps</button>
+  <button data-tab="more"><b>⚙️</b>Backup</button>
+</nav>
+
+<!-- ADD / EDIT SHEET -->
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <h2 id="formTitle">Add spot</h2>
+    <label for="eName">Name *</label>
+    <input class="f" id="eName" placeholder="e.g. Hidden Canyon">
+
+    <div class="two">
+      <div><label for="eCat">Category</label><select class="f" id="eCat"></select></div>
+      <div><label for="eReg">Region</label><select class="f" id="eReg"></select></div>
+    </div>
+
+    <label for="eLink">Google Maps link</label>
+    <input class="f" id="eLink" placeholder="Paste the share link here" inputmode="url">
+    <div class="hint" id="linkHint">If the link has GPS numbers in it, they fill in below by themselves.</div>
+
+    <div class="two">
+      <div><label for="eLat">Latitude</label><input class="f" id="eLat" inputmode="decimal" placeholder="24.7341"></div>
+      <div><label for="eLng">Longitude</label><input class="f" id="eLng" inputmode="decimal" placeholder="46.5725"></div>
+    </div>
+    <div class="hint">Tip: in Google Maps, press and hold the spot. The GPS numbers appear at the top - tap to copy, then paste both here (24.7341, 46.5725 also works in the Latitude box).</div>
+
+    <label for="ePlus">Plus code or address (optional)</label>
+    <input class="f" id="ePlus" placeholder="e.g. WW6R+4C9 Khubay">
+
+    <div class="two">
+      <div><label for="eAccess">Getting there</label><select class="f" id="eAccess"></select></div>
+      <div><label for="eFamily">Family-friendly</label><select class="f" id="eFamily"></select></div>
+    </div>
+
+    <div class="two">
+      <div><label for="eSeason">Best season</label><select class="f" id="eSeason"></select></div>
+      <div><label for="eStatus">Status</label><select class="f" id="eStatus"></select></div>
+    </div>
+
+    <label>Facilities</label>
+    <div class="checks" id="eFac"></div>
+
+    <label for="eDate">Date visited</label>
+    <input class="f" id="eDate" type="date">
+
+    <label>Your rating</label>
+    <div class="stars" id="eStars"></div>
+
+    <label for="eNotes">Notes</label>
+    <textarea class="f" id="eNotes" placeholder="What to bring, where to park, best time of day..."></textarea>
+
+    <label for="eExtra">Extra link (optional)</label>
+    <input class="f" id="eExtra" placeholder="e.g. a camping spot nearby" inputmode="url">
+
+    <div class="small-actions" style="margin-top:16px">
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn accent" id="saveBtn">Save</button>
+    </div>
+    <div class="small-actions"><button class="btn danger" id="deleteBtn" style="display:none">Delete this spot</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+var KEY = "saudiSpots.v1";
+var PREF = "saudiSpots.prefs.v1";
+
+var CATS = ["Desert & Dunes","Canyon & Mountains","Cave","Fossils & Geology","Oasis & Lake","Farm","Camping","Heritage & Museum","Park & Garden","Beach","Viewpoint","Other"];
+var REGIONS = ["Not set","Riyadh","Makkah","Madinah","Eastern Province","Qassim","Hail","Tabuk","Al Jouf","Northern Borders","Asir","Jazan","Najran","Al Baha"];
+var ACCESS = ["Not sure","Regular car","4x4 needed","Short walk","Hike needed"];
+var FAMILY = ["Not sure","Yes","No"];
+var SEASONS = ["Not sure","Winter","Spring","Summer","Autumn","All year"];
+var STATUS = ["Want to go","Visited"];
+var FACS = ["Toilets","Shade","Parking","Food nearby","Mobile signal","Prayer area","Paid entry"];
+
+var REGION_MAPS = [
+  ["Riyadh","https://goo.gl/maps/o1UzsqrnvAk"],
+  ["Makkah","https://goo.gl/maps/xnGUpe5Wn9x"],
+  ["Madinah","https://goo.gl/maps/EULpwRY9aRU2"],
+  ["Hail","https://goo.gl/maps/f6Fr1nqpej12"],
+  ["Eastern Province","https://goo.gl/maps/QGjPoghqepB2"],
+  ["Qassim","https://goo.gl/maps/VQ9FTPXFPwS2"],
+  ["Al Jouf","https://goo.gl/maps/yDVQ2TqJa3o"],
+  ["Tabuk","https://goo.gl/maps/K6xB5mUQ4W82"],
+  ["Northern Borders","https://goo.gl/maps/t519x8Q8rWw"],
+  ["Asir","https://goo.gl/maps/4rG3nisDNco"],
+  ["Jazan","https://goo.gl/maps/hgeD1Ss6zGk"],
+  ["Najran","https://goo.gl/maps/vFsjpQ5UCy62"],
+  ["Al Baha","https://goo.gl/maps/8bxLQ1CzhdG2"]
+];
+
+function base(o){
+  var d = {category:"Other",region:"Not set",link:"",lat:null,lng:null,plus:"",access:"Not sure",family:"Not sure",season:"Not sure",status:"Want to go",fac:[],date:"",rating:0,notes:"",extra:"",fav:false,suggested:false,source:"",created:0};
+  for (var k in o) d[k]=o[k];
+  return d;
+}
+
+var SEED = [
+  base({id:"s1",name:"Strawberry Farm",category:"Farm",link:"https://maps.app.goo.gl/m8ADmrKwiJ4iUuNb9",plus:"RC3H+WXR Strawberry Garden, Al Ammariyah",notes:"Shared by Wendy.",created:1}),
+  base({id:"s2",name:"Hidden Canyon",category:"Canyon & Mountains",link:"https://maps.app.goo.gl/8rB8MpGcGVjqeJJp9",plus:"WW6R+4C9 Mawan Hidden Canyon, Khubay",notes:"Shared by Wendy: cars can drive to the location.",created:2}),
+  base({id:"s3",name:"Pigeon Towers",category:"Heritage & Museum",link:"https://maps.app.goo.gl/WJRuD18RAc441E6E8",extra:"https://maps.app.goo.gl/DrC2EPZeFgMdpdU87",notes:"Shared by Wendy. Extra link = wild camping spot closer to the towers (near Khafs Daghrah Waterfall).",created:3}),
+  base({id:"s4",name:"Pigeon Towers - Wild Camping",category:"Camping",link:"https://maps.app.goo.gl/DrC2EPZeFgMdpdU87",plus:"R5WX+4R Khafs Daghrah Waterfall",notes:"Shared by Wendy: wild camping closer to Pigeon Towers.",created:4}),
+  base({id:"s5",name:"Oasis",category:"Oasis & Lake",link:"https://maps.app.goo.gl/qgVJ7gXayKeq96ey9",plus:"Lake Prodan 15522",notes:"Shared by Wendy: cars can drive to the location.",created:5}),
+  base({id:"s6",name:"Red Sand Dunes",category:"Desert & Dunes",link:"https://goo.gl/maps/gdvDrfR1NKzEdnYv8",notes:"Shared by Wendy: desert entry point.",created:6}),
+  base({id:"s7",name:"Star Sand Dunes",category:"Desert & Dunes",link:"https://maps.app.goo.gl/GFoQTFpH7jCFFdUY8",lat:26.271170,lng:46.616748,notes:"Shared by Wendy: desert entry point.",created:7}),
+  base({id:"s8",name:"Sha'ib Luha Pool",category:"Canyon & Mountains",region:"Riyadh",link:"https://maps.app.goo.gl/tU1tKowRU64zdcst9",plus:"Sha'ib Luha Pool, Uraidh, Riyadh 14775",family:"No",notes:"Shared by Wendy: stunning, even more so after rain. Hike in the canyons to see fossils and fossil imprints in the rocks.\nLocal Bedouin families live in this area. Please be respectful of their homes, privacy and way of life.",created:12}),
+  base({id:"s9",name:"Ibn Rasheed Cave",category:"Cave",region:"Riyadh",link:"https://maps.app.goo.gl/pzmRAzE4ZFZPGV1s9",plus:"X25C+X4C Khafs Ibn Rasheed, Sadus road, Huraymila",notes:"Shared by Wendy: a cave on the same road as her route to Edge of the World.\nNever go into a cave alone - take torches and tell someone where you are.",created:13}),
+  base({id:"s10",name:"Edge of the World - Wendy's route",category:"Viewpoint",region:"Riyadh",link:"https://goo.gl/maps/aSHEyU7szYLYbU5T7",notes:"Shared by Wendy: one of the routes to the Edge. Location not confirmed yet - tap Original link and copy the GPS into Edit.",created:14}),
+  base({id:"s11",name:"National Park gate (Wendy)",category:"Viewpoint",region:"Riyadh",link:"https://maps.app.goo.gl/fJr9SFjFiWPHAvmH9",notes:"Shared by Wendy: go through the National Park gate at this location. Location not confirmed yet - tap Original link and copy the GPS into Edit.",created:15}),
+  base({id:"s12",name:"Fossil site 1 (Wendy)",category:"Fossils & Geology",region:"Riyadh",link:"https://goo.gl/maps/jMgNRm6WPCqzfttq9",notes:"Wendy has found fossils here. Location not confirmed yet - tap Original link and copy the GPS into Edit.",created:16}),
+  base({id:"s13",name:"Fossil site 2 (Wendy)",category:"Fossils & Geology",region:"Riyadh",link:"https://goo.gl/maps/X4pym1JTsyNpxuVc8",notes:"Wendy has found fossils here. Location not confirmed yet - tap Original link and copy the GPS into Edit.",created:17}),
+  base({id:"c5",name:"Edge of the World (Jebel Fihrayn)",category:"Viewpoint",region:"Riyadh",lat:24.94734,lng:45.99091,access:"4x4 needed",season:"Winter",suggested:true,source:"https://houseofsaud.com/travel/riyadh-edge-of-the-world/",notes:"300 m (984 ft) cliffs on the Tuwaiq Escarpment, about 90-120 km (56-75 mi) north-west of Riyadh. Free - no ticket.\nTimes: open all the time via the Sadus Dam route. The Acacia Valley gate is usually open Fridays and Saturdays only and closes at 6 PM - if you are still inside, you are locked in until morning.\nThe last ~25 km (16 mi) is unpaved desert track: 4x4 needed. No toilets, water or phone signal - download offline maps, bring water, and tell someone your route.\nBest Nov-Feb at sunrise or sunset. Fossil shells can be found around the site. Stay well back from cliff edges.\nGPS = parking area near the viewpoint (two sources agree).",created:18}),
+  base({id:"c6",name:"Acacia Valley camping",category:"Camping",region:"Riyadh",plus:"Acacia Valley, Edge of the World, Riyadh",access:"4x4 needed",season:"Winter",suggested:true,source:"https://onthewayaround.com/edge-of-the-world-guide/",notes:"Valley of acacia trees below the Edge of the World - popular for overnight camping and picnics. Reached through the gate marked \"Access EOW\" on Google Maps.\nGate: usually open Fridays and Saturdays only, closes 6 PM. Soft sand and gravel - 4x4 needed.\nCheck the Nabati platform before you go to see if a camping permit is needed here.",created:19}),
+  base({id:"c7",name:"Heet Cave (Ain Heet)",category:"Cave",region:"Riyadh",lat:24.4861,lng:46.9972,suggested:true,source:"https://visitsaudi.com/en/riyadh/attractions/heet-cave",notes:"Limestone cave with an underground lake, about 30-40 km (19-25 mi) south-east of Riyadh, off the Al Kharj road. No ticket needed (Visit Saudi). No official opening hours found.\nSteep, loose slope down to the entrance - wear sturdy shoes. No toilets or food nearby.\nOne travel guide says access may currently be restricted - check before you go. Don't swim: the water depth and quality are not known.",created:20}),
+  base({id:"c8",name:"Red Sands - Dirab entry",category:"Desert & Dunes",region:"Riyadh",lat:24.3647,lng:46.3614,access:"Regular car",season:"Winter",suggested:true,source:"https://www.lonelyplanet.com/points-of-interest/red-sands/1532498",notes:"Deep red dunes near Al Muzahimiyah, about 55-80 km (34-50 mi) south-west of Riyadh. Quad bikes for hire from stalls along the highway. Busy at weekends.\nDriving up the dunes needs a 4x4 and an experienced driver.\nBest Nov-Feb, at sunset. GPS = main Dirab entry point (several sources agree within about 1 km (0.6 mi)).",created:21}),
+  base({id:"c9",name:"Al Kharrarah National Park",category:"Camping",region:"Riyadh",lat:24.40573,lng:46.24540,season:"Winter",suggested:true,source:"https://whatsonsaudiarabia.com/2022/01/best-camping-spots-in-riyadh/",notes:"National park about 100 km (62 mi) south-west of Riyadh, south of Al Muzahimiyah. Red dunes and acacia trees. The lake only forms after heavy winter rain.\nPopular for camping. Camping in national parks needs a Nabati permit in season - get one before you go. Bring all your own supplies.\nBest Nov-Mar. GPS = the lake (a second source's campsite coordinates are within about 200 m (656 ft)).",created:22}),
+  base({id:"c10",name:"Thumamah National Park",category:"Camping",region:"Riyadh",plus:"Thumamah National Park, Riyadh",access:"Regular car",family:"Yes",season:"Winter",suggested:true,source:"https://houseofsaud.com/travel/saudi-desertcamping-guide/",notes:"Desert park north of Riyadh (sources give 40-60 km (25-37 mi)). The easiest option for a first desert camp: 200+ Bedouin-style camps with kitchens, grill areas and toilets.\nBook online ahead for the parking-area camping zones. Quad bikes, picnics and stargazing. Can be busy.\nNo exact GPS for the entrance - opens in Google Maps by name.",created:23}),
+  base({id:"c11",name:"Graffiti Rock 1 (Qaryat al-Asba)",category:"Heritage & Museum",region:"Riyadh",plus:"Qaryat al Asba, Musayqirah, Riyadh",suggested:true,source:"https://saudiarabiatourismguide.com/?p=3634",notes:"Ancient rock carvings (camels, ostriches, wild cattle, people), some from the Neolithic era. Visible from the Makkah Highway near the Musayqirah exit, about 100-140 km (62-87 mi) west of Riyadh - sources differ.\nThe main rock is fenced; the gate is usually open. Please don't touch the carvings.\nNo exact GPS yet - opens in Google Maps by name.",created:24}),
+  base({id:"c12",name:"Petrified tree trunks, Al-Aflaj",category:"Fossils & Geology",region:"Riyadh",plus:"Al-Ajalaiyah, Al-Aflaj",suggested:true,source:"https://www.bernama.com/en/news.php/politics/world/news.php?id=2451804",notes:"Fossilised tree trunks and branches from the late Permian period, about 40 km (25 mi) east of Al-Ajalaiyah Centre in Al-Aflaj Governorate (Saudi Press Agency).\nThis is far south of Riyadh - plan it as a long day or overnight trip. Exact location not published: go with a local guide.",created:25}),
+  base({id:"c1",name:"At-Turaif District, Diriyah",category:"Heritage & Museum",region:"Riyadh",lat:24.73413,lng:46.57247,access:"Regular car",family:"Yes",suggested:true,source:"https://whc.unesco.org/document/168966",notes:"UNESCO World Heritage Site (2010). Open-air heritage museum. GPS = centre of the site (Saad Ibn Saud Palace) from the UNESCO file. Check opening hours and tickets before you go.",created:8}),
+  base({id:"c2",name:"Al Masmak Fortress",category:"Heritage & Museum",region:"Riyadh",lat:24.63111,lng:46.71333,access:"Regular car",family:"Yes",suggested:true,source:"https://www.atlasobscura.com/places/al-masmak-fortress",notes:"Museum in the old centre of Riyadh (opened to the public in 1995). Check opening hours before you go.",created:9}),
+  base({id:"c3",name:"National Museum of Saudi Arabia",category:"Heritage & Museum",region:"Riyadh",lat:24.64732,lng:46.71079,access:"Regular car",family:"Yes",suggested:true,source:"https://travel.sygic.com/nl/poi/national-museum-of-saudi-arabia-poi:5242612",notes:"Indoor museum in Al Murabba, Riyadh - a good pick for hot days. Check opening hours and tickets before you go.",created:10}),
+  base({id:"c4",name:"Ushaiqer Heritage Village",category:"Heritage & Museum",region:"Riyadh",lat:25.34250,lng:45.18333,access:"Regular car",family:"Yes",suggested:true,source:"https://saudipedia.com/en/ushayqir-heritage-village",notes:"Restored mud-brick village with a museum, about 200 km (124 mi) north-west of Riyadh, near Shaqra. GPS = village centre. Plan fuel and water for the drive, and check opening hours before you go.",created:11})
+];
+
+/* ---------- storage ---------- */
+function load(){
+  try { var r = localStorage.getItem(KEY); if (r) { var a = JSON.parse(r); if (Object.prototype.toString.call(a)==="[object Array]") {
+    a = a.map(base);
+    var gone = (loadPrefs().deletedSeeds) || [];
+    SEED.forEach(function(s){ var have=false; for (var i=0;i<a.length;i++) if (a[i].id===s.id) have=true; if (!have && gone.indexOf(s.id)===-1) a.push(base(JSON.parse(JSON.stringify(s)))); });
+    return a;
+  } } } catch(e){}
+  return SEED.map(function(s){ return base(JSON.parse(JSON.stringify(s))); });
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(spots)); } catch(e){ toast("Could not save on this phone"); } }
+function loadPrefs(){ try { return JSON.parse(localStorage.getItem(PREF)) || {}; } catch(e){ return {}; } }
+function savePrefs(){ try { localStorage.setItem(PREF, JSON.stringify(prefs)); } catch(e){} }
+
+var spots = load();
+var prefs = loadPrefs();
+var filter = prefs.filter || "all";
+var myPos = null;
+var editing = null;
+var formRating = 0;
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function hasGPS(s){ return typeof s.lat==="number" && typeof s.lng==="number" && !isNaN(s.lat) && !isNaN(s.lng); }
+function isIOS(){ var u=navigator.userAgent||""; return /iPad|iPhone|iPod/.test(u) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1); }
+function toast(m){ var t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(toast._t); toast._t=setTimeout(function(){t.style.display="none";},2200); }
+function fillSelect(el, arr, first){ el.innerHTML = (first?'<option value="">'+esc(first)+'</option>':"") + arr.map(function(v){return '<option>'+esc(v)+'</option>';}).join(""); }
+function safeUrl(u){ return /^https?:\/\//i.test(u||"") ? u : ""; }
+
+function dist(a,b,c,d){
+  var R=6371, r=Math.PI/180, dLat=(c-a)*r, dLng=(d-b)*r;
+  var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function fmtDist(km){
+  var mi = km*0.621371;
+  function n(v){ return v<10 ? v.toFixed(1) : Math.round(v).toString(); }
+  return prefs.unit==="mi" ? n(mi)+" mi ("+n(km)+" km)" : n(km)+" km ("+n(mi)+" mi)";
+}
+
+/* Pull GPS out of a pasted text or Google Maps long link */
+function parseCoords(text){
+  if (!text) return null;
+  var t = decodeURIComponent(String(text));
+  var pats = [/@(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/, /!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/, /[?&](?:q|ll|query|destination|daddr)=(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/, /\/place\/(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/, /^\s*(-?\d{1,2}\.\d+)\s*[,\s]\s*(-?\d{1,3}\.\d+)\s*$/];
+  for (var i=0;i<pats.length;i++){
+    var m = t.match(pats[i]);
+    if (m){ var la=parseFloat(m[1]), lo=parseFloat(m[2]); if (la>=-90&&la<=90&&lo>=-180&&lo<=180) return [la,lo]; }
+  }
+  return null;
+}
+
+/* ---------- navigation links ---------- */
+function navLinks(s){
+  var q = s.plus || s.name;
+  if (hasGPS(s)){
+    var ll = s.lat+","+s.lng;
+    return {
+      google:"https://www.google.com/maps/dir/?api=1&destination="+ll,
+      waze:"https://waze.com/ul?ll="+ll+"&navigate=yes",
+      apple:"https://maps.apple.com/?daddr="+ll+"&dirflg=d"
+    };
+  }
+  return {
+    google: s.plus ? "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q) : (safeUrl(s.link) || "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q)),
+    waze:null, apple:null
+  };
+}
+
+/* ---------- render ---------- */
+function renderChips(){
+  var list = [["all","All"],["fav","★ Favourites"],["want","Want to go"],["visited","Visited"],["family","Family-friendly"],["car","Regular car"],["new","Suggested"],["nogps","Needs GPS"]];
+  $("chips").innerHTML = list.map(function(c){ return '<button class="chip'+(filter===c[0]?" on":"")+'" data-f="'+c[0]+'">'+esc(c[1])+'</button>'; }).join("");
+}
+
+function matches(s){
+  var q = $("q").value.trim().toLowerCase();
+  if (q && (s.name+" "+s.notes+" "+s.region+" "+s.category+" "+s.plus).toLowerCase().indexOf(q)===-1) return false;
+  var c=$("fCat").value, r=$("fReg").value;
+  if (c && s.category!==c) return false;
+  if (r && s.region!==r) return false;
+  switch(filter){
+    case "fav": return s.fav;
+    case "want": return s.status==="Want to go";
+    case "visited": return s.status==="Visited";
+    case "family": return s.family==="Yes";
+    case "car": return s.access==="Regular car";
+    case "new": return s.suggested;
+    case "nogps": return !hasGPS(s);
+  }
+  return true;
+}
+
+function render(){
+  var arr = spots.filter(matches);
+  var sort = $("fSort").value;
+  arr.sort(function(a,b){
+    if (sort==="rating") return (b.rating-a.rating) || a.name.localeCompare(b.name);
+    if (sort==="new") return (b.created||0)-(a.created||0);
+    if (sort==="near" && myPos){
+      var da = hasGPS(a)?dist(myPos[0],myPos[1],a.lat,a.lng):1e9, db = hasGPS(b)?dist(myPos[0],myPos[1],b.lat,b.lng):1e9;
+      return da-db;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  var visited = spots.filter(function(s){return s.status==="Visited";}).length;
+  $("countLine").textContent = spots.length+" spots · "+visited+" visited";
+
+  if (!arr.length){ $("list").innerHTML = '<div class="empty">No spots match.<br>Try another filter or tap "+ Add spot".</div>'; return; }
+
+  var ios = isIOS();
+  $("list").innerHTML = arr.map(function(s){
+    var n = navLinks(s);
+    var d = (myPos && hasGPS(s)) ? '<span>· '+fmtDist(dist(myPos[0],myPos[1],s.lat,s.lng))+' away (straight line)</span>' : "";
+    var badges = '<span class="badge">'+esc(s.category)+'</span>';
+    if (s.region!=="Not set") badges += '<span class="badge grey">'+esc(s.region)+'</span>';
+    if (s.status==="Visited") badges += '<span class="badge">✓ Visited</span>';
+    if (s.family==="Yes") badges += '<span class="badge warm">Family-friendly</span>';
+    if (s.access!=="Not sure") badges += '<span class="badge grey">'+esc(s.access)+'</span>';
+    if (s.suggested) badges += '<span class="badge warm">Suggested</span>';
+    if (!hasGPS(s)) badges += '<span class="badge grey">No exact GPS yet</span>';
+    var stars = "";
+    for (var i=1;i<=5;i++) stars += '<button class="star'+(i<=s.rating?" on":"")+'" data-rate="'+s.id+'" data-v="'+i+'" aria-label="'+i+' stars">★</button>';
+    var facs = s.fac && s.fac.length ? '<div class="meta" style="margin-top:4px">'+s.fac.map(esc).join(" · ")+'</div>' : "";
+    var extra = safeUrl(s.extra) ? '<a class="btn" href="'+esc(s.extra)+'" target="_blank" rel="noopener">Extra link</a>' : "";
+    var src = safeUrl(s.source) ? '<a class="btn" href="'+esc(s.source)+'" target="_blank" rel="noopener">Source</a>' : "";
+    var orig = safeUrl(s.link) ? '<a class="btn" href="'+esc(s.link)+'" target="_blank" rel="noopener">Original link</a>' : "";
+    return '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">'+
+        '<h3>'+esc(s.name)+'</h3>'+
+        '<button class="iconbtn" data-fav="'+s.id+'" aria-label="Favourite" style="min-width:40px;height:40px">'+(s.fav?"★":"☆")+'</button>'+
+      '</div>'+
+      '<div class="meta">'+badges+d+'</div>'+
+      (s.plus?'<div class="meta" style="margin-top:6px">'+esc(s.plus)+'</div>':"")+
+      (hasGPS(s)?'<div class="meta" style="margin-top:4px">GPS: '+s.lat.toFixed(6)+', '+s.lng.toFixed(6)+'</div>':"")+
+      facs+
+      '<div class="stars">'+stars+'</div>'+
+      (s.notes?'<div class="note">'+esc(s.notes)+'</div>':"")+
+      '<div class="actions">'+
+        '<a class="btn primary" href="'+esc(n.google)+'" target="_blank" rel="noopener">Google</a>'+
+        (n.waze?'<a class="btn primary" href="'+esc(n.waze)+'" target="_blank" rel="noopener">Waze</a>':'<button class="btn" disabled>Waze</button>')+
+        (ios ? (n.apple?'<a class="btn primary" href="'+esc(n.apple)+'">Apple</a>':'<button class="btn" disabled>Apple</button>') : '<button class="btn" data-share="'+s.id+'">Share</button>')+
+      '</div>'+
+      '<div class="small-actions">'+
+        (hasGPS(s)?'<button class="btn" data-copy="'+s.id+'">Copy GPS</button>':"")+
+        (ios?'<button class="btn" data-share="'+s.id+'">Share</button>':"")+
+        '<button class="btn" data-edit="'+s.id+'">Edit</button>'+
+      '</div>'+
+      ((orig||extra||src)?'<div class="small-actions">'+orig+extra+src+'</div>':"")+
+    '</div>';
+  }).join("");
+}
+
+function renderRegionMaps(){
+  $("regionMaps").innerHTML = REGION_MAPS.map(function(r,i){
+    return '<div class="card maplink"><div><b>'+(i+1)+'. '+esc(r[0])+'</b><div class="hint">'+esc(r[1].replace("https://",""))+'</div></div><a class="btn primary" style="min-width:90px" href="'+esc(r[1])+'" target="_blank" rel="noopener">Open</a></div>';
+  }).join("");
+}
+
+/* ---------- form ---------- */
+function drawFormStars(){
+  var h="";
+  for (var i=1;i<=5;i++) h += '<button type="button" class="star'+(i<=formRating?" on":"")+'" data-fv="'+i+'">★</button>';
+  $("eStars").innerHTML = h;
+}
+function openForm(s){
+  editing = s || null;
+  var d = s || base({});
+  $("formTitle").textContent = s ? "Edit spot" : "Add spot";
+  $("eName").value=d.name||""; $("eCat").value=d.category; $("eReg").value=d.region;
+  $("eLink").value=d.link||""; $("eLat").value=hasGPS(d)?d.lat:""; $("eLng").value=hasGPS(d)?d.lng:"";
+  $("ePlus").value=d.plus||""; $("eAccess").value=d.access; $("eFamily").value=d.family;
+  $("eSeason").value=d.season; $("eStatus").value=d.status; $("eDate").value=d.date||"";
+  $("eNotes").value=d.notes||""; $("eExtra").value=d.extra||"";
+  $("eFac").innerHTML = FACS.map(function(f){ return '<label><input type="checkbox" value="'+esc(f)+'"'+(d.fac.indexOf(f)>-1?" checked":"")+'> '+esc(f)+'</label>'; }).join("");
+  formRating = d.rating||0; drawFormStars();
+  $("linkHint").textContent = "If the link has GPS numbers in it, they fill in below by themselves.";
+  $("linkHint").className = "hint";
+  $("deleteBtn").style.display = s ? "block" : "none";
+  $("sheet").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeForm(){ $("sheet").classList.remove("open"); document.body.style.overflow=""; editing=null; }
+
+function saveForm(){
+  var name = $("eName").value.trim();
+  if (!name){ toast("Please add a name"); $("eName").focus(); return; }
+  var latTxt=$("eLat").value.trim(), lngTxt=$("eLng").value.trim(), lat=null, lng=null;
+  var both = parseCoords(latTxt);
+  if (both && !lngTxt){ lat=both[0]; lng=both[1]; }
+  else if (latTxt || lngTxt){
+    lat=parseFloat(latTxt.replace(",", ".")); lng=parseFloat(lngTxt.replace(",", "."));
+    if (isNaN(lat)||isNaN(lng)||lat<-90||lat>90||lng<-180||lng>180){ toast("GPS numbers look wrong - please check"); return; }
+  }
+  var fac = []; var boxes=$("eFac").querySelectorAll("input:checked"); for (var i=0;i<boxes.length;i++) fac.push(boxes[i].value);
+  var data = {name:name,category:$("eCat").value,region:$("eReg").value,link:$("eLink").value.trim(),lat:lat,lng:lng,plus:$("ePlus").value.trim(),access:$("eAccess").value,family:$("eFamily").value,season:$("eSeason").value,status:$("eStatus").value,fac:fac,date:$("eDate").value,rating:formRating,notes:$("eNotes").value.trim(),extra:$("eExtra").value.trim()};
+  if (editing){ for (var k in data) editing[k]=data[k]; }
+  else { data.id="u"+Date.now(); data.created=Date.now(); spots.push(base(data)); }
+  save(); closeForm(); render(); toast("Saved");
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", function(e){
+  var t = e.target.closest ? e.target.closest("button,a") : e.target;
+  if (!t) return;
+  var id;
+  if (t.dataset.f){ filter=t.dataset.f; prefs.filter=filter; savePrefs(); renderChips(); render(); return; }
+  if ((id=t.dataset.rate)){ var s=find(id); var v=+t.dataset.v; s.rating = s.rating===v?0:v; save(); render(); return; }
+  if ((id=t.dataset.fav)){ var s2=find(id); s2.fav=!s2.fav; save(); render(); return; }
+  if ((id=t.dataset.edit)){ openForm(find(id)); return; }
+  if ((id=t.dataset.copy)){ var s3=find(id); copy(s3.lat+", "+s3.lng); return; }
+  if ((id=t.dataset.share)){ share(find(id)); return; }
+  if (t.dataset.fv){ var fv=+t.dataset.fv; formRating = formRating===fv?0:fv; drawFormStars(); return; }
+  if (t.dataset.tab){
+    var tabs=document.querySelectorAll("nav.tabs button"); for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle("on", tabs[i]===t);
+    var secs=document.querySelectorAll(".section"); for (var j=0;j<secs.length;j++) secs[j].classList.remove("on");
+    $("sec-"+t.dataset.tab).classList.add("on");
+    $("addBtn").style.display = t.dataset.tab==="spots" ? "" : "none";
+    window.scrollTo(0,0);
+  }
+});
+
+function find(id){ for (var i=0;i<spots.length;i++) if (spots[i].id===id) return spots[i]; return null; }
+
+function copy(text){
+  function fallback(){ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); toast("Copied: "+text);}catch(e){toast(text);} document.body.removeChild(ta); }
+  if (navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(function(){toast("Copied: "+text);}, fallback); } else fallback();
+}
+function share(s){
+  var url = navLinks(s).google;
+  var text = s.name + (hasGPS(s) ? " - GPS "+s.lat+", "+s.lng : (s.plus?" - "+s.plus:""));
+  if (navigator.share){ navigator.share({title:s.name,text:text,url:url}).catch(function(){}); }
+  else copy(text+" "+url);
+}
+
+$("q").addEventListener("input", render);
+$("fCat").addEventListener("change", render);
+$("fReg").addEventListener("change", render);
+$("fSort").addEventListener("change", function(){
+  if (this.value==="near"){
+    if (!navigator.geolocation){ toast("Location is not available on this phone"); return; }
+    toast("Finding your location...");
+    navigator.geolocation.getCurrentPosition(function(p){ myPos=[p.coords.latitude,p.coords.longitude]; render(); toast("Sorted by distance"); },
+      function(){ toast("Location blocked - allow location for this page"); render(); },
+      {enableHighAccuracy:false,timeout:15000,maximumAge:300000});
+  } else render();
+});
+
+$("addBtn").addEventListener("click", function(){ openForm(null); });
+$("cancelBtn").addEventListener("click", closeForm);
+$("saveBtn").addEventListener("click", saveForm);
+$("sheet").addEventListener("click", function(e){ if (e.target===this) closeForm(); });
+$("deleteBtn").addEventListener("click", function(){
+  if (!editing) return;
+  if (confirm("Delete \""+editing.name+"\"?")){ if (/^[sc]\d+$/.test(editing.id)){ prefs.deletedSeeds=(prefs.deletedSeeds||[]).concat(editing.id); savePrefs(); } spots = spots.filter(function(x){return x!==editing;}); save(); closeForm(); render(); toast("Deleted"); }
+});
+$("eLink").addEventListener("input", function(){
+  var c = parseCoords(this.value);
+  if (c){ $("eLat").value=c[0]; $("eLng").value=c[1]; $("linkHint").textContent="GPS found in the link and filled in."; $("linkHint").className="hint ok"; }
+  else if (this.value){ $("linkHint").textContent="Short links do not show GPS. Open the link, press and hold the spot, copy the numbers into Latitude below."; $("linkHint").className="hint"; }
+});
+
+/* backup */
+$("exportBtn").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify({app:"Saudi Spots",version:1,exported:new Date().toISOString(),spots:spots},null,2)],{type:"application/json"});
+  var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="saudi-spots-backup-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href); document.body.removeChild(a);},500);
+  toast("Backup downloaded");
+});
+$("importBtn").addEventListener("click", function(){ $("importFile").click(); });
+$("importFile").addEventListener("change", function(){
+  var f=this.files&&this.files[0]; if(!f) return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var d=JSON.parse(rd.result); var arr = d.spots || d;
+      if (Object.prototype.toString.call(arr)!=="[object Array]") throw 0;
+      var added=0, updated=0;
+      arr.forEach(function(x){ if(!x||!x.name) return; var ex=x.id?find(x.id):null; if(ex){ for(var k in x) ex[k]=x[k]; updated++; } else { x.id=x.id||("u"+Date.now()+added); spots.push(base(x)); added++; } });
+      save(); render(); toast(added+" added, "+updated+" updated");
+    }catch(e){ toast("That file is not a Saudi Spots backup"); }
+  };
+  rd.readAsText(f); this.value="";
+});
+$("resetBtn").addEventListener("click", function(){
+  if (confirm("Reset to the starter list? Your changes will be lost.")){ spots = SEED.map(function(s){return base(JSON.parse(JSON.stringify(s)));}); prefs.deletedSeeds=[]; savePrefs(); save(); render(); toast("Starter list restored"); }
+});
+
+/* theme + units */
+function applyTheme(){ var dark = prefs.theme==="dark"; document.documentElement.setAttribute("data-theme", dark?"dark":"light"); $("themeBtn").textContent = dark?"🌙":"☀️"; var m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", dark?"#1C1916":"#FBF8F3"); }
+$("themeBtn").addEventListener("click", function(){ prefs.theme = prefs.theme==="dark"?"light":"dark"; savePrefs(); applyTheme(); });
+$("unitSel").addEventListener("change", function(){ prefs.unit=this.value; savePrefs(); render(); });
+
+/* init */
+fillSelect($("fCat"), CATS, "All categories");
+fillSelect($("fReg"), REGIONS.slice(1), "All regions");
+fillSelect($("eCat"), CATS); fillSelect($("eReg"), REGIONS); fillSelect($("eAccess"), ACCESS);
+fillSelect($("eFamily"), FAMILY); fillSelect($("eSeason"), SEASONS); fillSelect($("eStatus"), STATUS);
+$("unitSel").value = prefs.unit || "km";
+document.addEventListener("click", function(e){ var b=e.target.closest&&e.target.closest("#eStars .star"); if(b){ e.preventDefault(); } }, true);
+applyTheme(); renderChips(); renderRegionMaps(); render(); save();
+})();
+</script>
+</body>
+</html>
