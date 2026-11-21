@@ -1,0 +1,14 @@
+{
+  "name": "Saudi Spots",
+  "short_name": "Saudi Spots",
+  "description": "Places to visit in Saudi Arabia - GPS, notes, ratings and car navigation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
