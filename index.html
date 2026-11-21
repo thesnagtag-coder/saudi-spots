@@ -90,6 +90,17 @@ nav.tabs button.on{color:var(--accent);font-weight:700}
 .pk-bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px}.pk-bar i{display:block;height:100%;background:var(--teal)}
 .btn.wa{background:#128C7E;border-color:#128C7E;color:#fff}
 .sendrow{display:flex;gap:8px;margin-top:8px}.sendrow .btn{flex:1;font-size:14px;padding:10px 6px}
+.sos{position:fixed;left:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;background:#C62828;color:#fff;border:none;border-radius:999px;width:56px;height:56px;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.em-call{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.em-call a{display:block;text-decoration:none;border-radius:14px;padding:10px 10px 12px;background:#C62828;color:#fff}
+.em-call a b{display:block;font-size:26px;line-height:1.1}
+.em-call a span{font-size:13px;line-height:1.3;display:block}
+.em-call a.full{grid-column:1/-1}
+.em-list a{display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;color:var(--ink);border-top:1px solid var(--line);padding:10px 0}
+.em-list a:first-child{border-top:none}
+.em-list a b{font-size:18px;color:#C62828;white-space:nowrap}
+.em-steps{margin:6px 0 0;padding-left:20px}.em-steps li{margin:6px 0}
+.em-gps{font-size:20px;font-weight:700;margin:6px 0;word-break:break-all}
 .fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center}
 .sheet.open{display:flex}
@@ -326,6 +337,106 @@ textarea.f{min-height:90px;resize:vertical}
     </div>
     <div class="hint">Tap a spot to jump straight to it.</div>
     <div id="indexList"></div>
+  </div>
+</div>
+
+<button class="sos" id="sosBtn" aria-label="Emergency numbers and help">SOS</button>
+
+<div class="sheet" id="sosSheet">
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 style="margin:4px 0;color:#C62828">🆘 Emergency</h2>
+      <button class="btn" id="sosClose" style="min-width:80px">Close</button>
+    </div>
+    <div class="hint">Tap a number to call. Emergency calls are free.</div>
+
+    <div class="em-call" style="margin-top:10px">
+      <a class="full" href="tel:911"><b>911</b><span>Unified emergency number - police, fire, rescue, traffic. Riyadh, Makkah, Madinah and Eastern Province regions.</span></a>
+      <a href="tel:997"><b>997</b><span>Ambulance (Red Crescent) - whole country</span></a>
+      <a href="tel:998"><b>998</b><span>Civil Defense - fire, flood, rescue. Other regions.</span></a>
+      <a href="tel:999"><b>999</b><span>Police - other regions</span></a>
+      <a href="tel:996"><b>996</b><span>Road Security - highways</span></a>
+    </div>
+
+    <div class="card">
+      <h3>📍 My location right now</h3>
+      <div class="hint">Get your exact GPS to read out on the phone or send to family. Tap Allow if your phone asks for location.</div>
+      <div class="em-gps" id="myGps">Not found yet</div>
+      <div class="hint" id="myGpsAcc"></div>
+      <div class="small-actions"><button class="btn primary" id="gpsBtn">Find my GPS</button></div>
+      <div class="sendrow" id="gpsSend" style="display:none"><a class="btn wa" id="gpsWa" href="#" target="_blank" rel="noopener">💬 WhatsApp my location</a><button class="btn" id="gpsCopy">Copy GPS</button></div>
+    </div>
+
+    <div class="card">
+      <h3>🏜️ Lost or stuck in the desert</h3>
+      <div class="note"><b>Who to call:</b> 911 in the Riyadh, Makkah, Madinah and Eastern Province regions. 998 (Civil Defense) in all other regions. Someone hurt: 997. Stuck near a highway: 996.</div>
+      <ol class="em-steps">
+        <li><b>Stop driving.</b> Driving on uses fuel and takes you further from where people will look.</li>
+        <li><b>Call first,</b> then send your GPS (Find my GPS above) to the call-taker and to family or friends.</li>
+        <li><b>Stay with the car.</b> It gives shade and is much easier to see from the air or far away than a person walking.</li>
+        <li><b>Save your phone battery:</b> lower the brightness, close apps, use the car charger while the engine runs.</li>
+        <li><b>No signal?</b> Try again from a little higher ground nearby, but keep the car in sight. Keep trying every so often.</li>
+        <li><b>Keep out of the sun</b> and don't walk in the midday heat. Keep your water for drinking.</li>
+        <li><b>Be easy to spot:</b> something brightly coloured on the roof by day; hazard lights or headlights in short flashes at night.</li>
+        <li><b>Stay together.</b> Don't split up the group.</li>
+      </ol>
+      <div class="note" style="margin-top:8px"><b>Before every desert trip:</b> tell someone your route and when you'll be back, go with 2 cars, download offline maps, take a full tank and extra water, and send your camp's GPS to 2 people.</div>
+      <div class="hint">Who to call: Saudi Civil Defense instructions. The steps are widely used desert safety practice, not a Saudi regulation.</div>
+    </div>
+
+    <div class="card">
+      <h3>🗣️ What to say when you call</h3>
+      <ol class="em-steps">
+        <li>What happened (the emergency first).</li>
+        <li>Where you are: GPS, or city, district and a landmark.</li>
+        <li>How many people are hurt, and are they awake and breathing.</li>
+        <li>Your name and phone number.</li>
+        <li>Don't hang up until they end the call. Ask for English if you need it.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>🚗 Road and accidents</h3>
+      <div class="em-list">
+        <a href="tel:993"><span>Traffic police (Muroor) - accidents</span><b>993</b></a>
+        <a href="tel:996"><span>Road Security - highways</span><b>996</b></a>
+        <a href="tel:920000560"><span>Najm - minor accident, insured car, nobody hurt</span><b>920000560</b></a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🩺 Health and help lines</h3>
+      <div class="em-list">
+        <a href="tel:937"><span>Ministry of Health - medical advice, 24/7</span><b>937</b></a>
+        <a href="https://wa.me/966920005937" target="_blank" rel="noopener"><span>Ministry of Health on WhatsApp, 24/7</span><b>920005937</b></a>
+        <a href="tel:1919"><span>Domestic violence reports, 24/7 (confidential)</span><b>1919</b></a>
+        <a href="tel:116111"><span>Child helpline</span><b>116111</b></a>
+        <a href="tel:994"><span>Border Guard - coast and sea</span><b>994</b></a>
+        <a href="tel:112"><span>112 - listed as an emergency number by stc. Use the numbers above first.</span><b>112</b></a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📱 Useful apps</h3>
+      <div class="note"><b>Asefni</b> (Saudi Red Crescent): request an ambulance and share your location.
+<b>Najm</b>: report minor accidents with insured cars.</div>
+    </div>
+
+    <div class="sendrow"><a class="btn wa" id="emWa" href="#" target="_blank" rel="noopener">💬 WhatsApp these numbers</a><button class="btn" data-send="emerg:0">📤 Send</button></div>
+
+    <div class="hint" style="margin-top:12px">Last checked: 21 Nov 2026. Numbers can change - check official sources.</div>
+    <div class="small-actions">
+      <a class="btn" href="https://www.cst.gov.sa/en/about/Numbering" target="_blank" rel="noopener">Source: CST numbering</a>
+      <a class="btn" href="https://www.stc.com.sa/en/personal/support/support-library/emergency-numbers.html" target="_blank" rel="noopener">Source: stc</a>
+    </div>
+    <div class="small-actions">
+      <a class="btn" href="https://moh.gov.sa/en/Ministry/About/Pages/ContactUs.aspx" target="_blank" rel="noopener">Source: Ministry of Health</a>
+      <a class="btn" href="https://english.ajel.sa/saudi-arabia/72zrdncq9" target="_blank" rel="noopener">Source: Civil Defense (Ajel)</a>
+    </div>
+    <div class="small-actions">
+      <a class="btn" href="https://saudilifeguide.com/emergency-number-saudi-arabia/" target="_blank" rel="noopener">Source: Saudi Life Guide</a>
+      <a class="btn" href="https://saudigazette.com.sa/article/653912" target="_blank" rel="noopener">Source: 911 regions (Saudi Gazette)</a>
+    </div>
   </div>
 </div>
 
@@ -942,6 +1053,10 @@ function sendText(kind, id){
   } else if (kind==="map"){
     var r=REGION_MAPS[id]; if(!r) return "";
     t = "🗺️ Wilderness map - "+r[0]+": "+r[1]+"\n";
+  } else if (kind==="emerg"){
+    t = "🆘 Saudi emergency numbers\n911 - Unified emergency (Riyadh, Makkah, Madinah, Eastern Province)\n997 - Ambulance (Red Crescent)\n998 - Civil Defense (other regions)\n999 - Police (other regions)\n996 - Road Security (highways)\n993 - Traffic police\n920000560 - Najm (minor accidents)\n937 - Ministry of Health advice\n1919 - Domestic violence\n116111 - Child helpline\nLost in the desert: call 911 (or 998 in other regions), stay with the car and send your GPS.\n";
+  } else if (kind==="mygps"){
+    t = "🆘 My location right now\nGPS: "+id+"\nGoogle Maps: https://www.google.com/maps/search/?api=1&query="+id+"\n";
   } else if (kind==="pack"){
     var L=pack[id]||[];
     t = (id==="food"?"🍳 Camping food list":"🏕️ Camping gear list")+"\n";
@@ -996,6 +1111,28 @@ $("fSort").addEventListener("change", function(){
 
 $("addBtn").addEventListener("click", function(){ openForm(null); });
 $("indexBtn").addEventListener("click", openIndex);
+/* emergency */
+var myGps = "";
+function openSos(){ $("emWa").href = waUrl(sendText("emerg",0)); $("sosSheet").classList.add("open"); document.body.style.overflow="hidden"; }
+function closeSos(){ $("sosSheet").classList.remove("open"); document.body.style.overflow=""; }
+$("sosBtn").addEventListener("click", openSos);
+$("sosClose").addEventListener("click", closeSos);
+$("sosSheet").addEventListener("click", function(e){ if (e.target===this) closeSos(); });
+$("gpsBtn").addEventListener("click", function(){
+  if (!navigator.geolocation){ $("myGps").textContent="This phone can't share GPS here"; return; }
+  $("myGps").textContent="Finding you..."; $("myGpsAcc").textContent="";
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var la=pos.coords.latitude.toFixed(6), lo=pos.coords.longitude.toFixed(6), acc=Math.round(pos.coords.accuracy||0);
+    myGps = la+", "+lo;
+    $("myGps").textContent = myGps;
+    $("myGpsAcc").textContent = acc ? "Accurate to about "+acc+" m ("+Math.round(acc*3.281)+" ft)" : "";
+    $("gpsWa").href = waUrl(sendText("mygps", la+","+lo));
+    $("gpsSend").style.display="";
+  }, function(err){
+    $("myGps").textContent = err && err.code===1 ? "Location is blocked - allow location for this app in your phone settings" : "Couldn't get GPS - go outside and try again";
+  }, {enableHighAccuracy:true, timeout:30000, maximumAge:0});
+});
+$("gpsCopy").addEventListener("click", function(){ if(myGps) copy(myGps); });
 $("indexClose").addEventListener("click", closeIndex);
 $("indexSheet").addEventListener("click", function(e){ if (e.target===this) closeIndex(); });
 $("filterToggle").addEventListener("click", function(){ prefs.hideFilters = !(prefs.hideFilters===true); savePrefs(); applyFilterBox(); });
