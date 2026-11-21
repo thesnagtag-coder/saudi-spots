@@ -240,6 +240,11 @@ textarea.f{min-height:90px;resize:vertical}
       <div class="note">Waze and Apple buttons need exact GPS. Spots with only a link or plus code open in Google Maps.</div>
     </div>
     <div class="card">
+      <h3>Works offline</h3>
+      <div class="note" id="offlineStatus">Checking...</div>
+      <div class="hint">Open the app once with internet and it is saved on your phone. Without signal you can still see your spots, notes, packing lists and the SOS screen, and call numbers. Maps, Waze and WhatsApp need signal.</div>
+    </div>
+    <div class="card">
       <h3>Put it on your home screen</h3>
       <div class="note"><b>iPhone (Safari):</b> Share button, then "Add to Home Screen".
 <b>Android (Chrome):</b> menu (three dots), then "Add to Home screen" or "Install app".</div>
@@ -348,7 +353,7 @@ textarea.f{min-height:90px;resize:vertical}
       <h2 style="margin:4px 0;color:#C62828">🆘 Emergency</h2>
       <button class="btn" id="sosClose" style="min-width:80px">Close</button>
     </div>
-    <div class="hint">Tap a number to call. Emergency calls are free.</div>
+    <div class="hint">Tap a number to call. Emergency calls are free. This screen works without internet once the app has been opened online.</div>
 
     <div class="em-call" style="margin-top:10px">
       <a class="full" href="tel:911"><b>911</b><span>Unified emergency number - police, fire, rescue, traffic. Riyadh, Makkah, Madinah and Eastern Province regions.</span></a>
@@ -1182,6 +1187,15 @@ $("resetBtn").addEventListener("click", function(){
 function applyTheme(){ var dark = prefs.theme==="dark"; document.documentElement.setAttribute("data-theme", dark?"dark":"light"); $("themeBtn").textContent = dark?"🌙":"☀️"; var m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", dark?"#1C1916":"#FBF8F3"); }
 $("themeBtn").addEventListener("click", function(){ prefs.theme = prefs.theme==="dark"?"light":"dark"; savePrefs(); applyTheme(); });
 $("unitSel").addEventListener("change", function(){ prefs.unit=this.value; savePrefs(); render(); });
+
+/* offline support */
+(function(){
+  var st = $("offlineStatus");
+  var okHost = location.protocol==="https:" || location.hostname==="localhost" || location.hostname==="127.0.0.1";
+  if (!("serviceWorker" in navigator) || !okHost){ if(st) st.textContent = "Not available here - open the app from its web link."; return; }
+  navigator.serviceWorker.register("sw.js").catch(function(){ if(st) st.textContent = "Could not turn on offline mode on this phone."; });
+  navigator.serviceWorker.ready.then(function(){ if(st) st.textContent = "✅ Ready - this app is saved on your phone and opens without signal."; });
+})();
 
 /* init */
 updateCounts();
