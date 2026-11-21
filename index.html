@@ -145,6 +145,16 @@ textarea.f{min-height:90px;resize:vertical}
     <div class="card maplink"><div><b>Time Out Riyadh</b><div class="hint">timeoutriyadh.com</div></div><a class="btn primary" style="min-width:90px" href="https://www.timeoutriyadh.com/" target="_blank" rel="noopener">Open</a></div>
   </section>
 
+  <!-- LOCAL NAMES -->
+  <section class="section" id="sec-names">
+    <h2 style="margin:6px 0">Local Names</h2>
+    <div class="info">What the local names mean in English, and the story behind them. Only meanings found in a published source are shown - each has a Source button. Names spelled in English letters.</div>
+    <div id="namesList"></div>
+    <h2 style="margin:18px 0 6px">Useful words</h2>
+    <div id="wordsList"></div>
+    <div class="card"><h3>Not looked up yet</h3><div class="note">Mawan (Hidden Canyon), Sha'ib Luha, Khafs Ibn Rasheed, Khafs Daghrah, Al Ammariyah, Lake Prodan, Pigeon Towers and Red Sand Dunes - their meanings still need to be found in a reliable source.</div></div>
+  </section>
+
   <!-- SETTINGS -->
   <section class="section" id="sec-more">
     <h2 style="margin:6px 0">Backup & Settings</h2>
@@ -196,6 +206,7 @@ textarea.f{min-height:90px;resize:vertical}
 <nav class="tabs">
   <button class="on" data-tab="spots"><b>📍</b>Spots</button>
   <button data-tab="maps"><b>🗺️</b>Region maps</button>
+  <button data-tab="names"><b>📖</b>Names</button>
   <button data-tab="more"><b>⚙️</b>Backup</button>
 </nav>
 
@@ -286,6 +297,53 @@ var SEASONS = ["Not sure","Winter","Spring","Summer","Autumn","All year"];
 var STATUS = ["Want to go","Visited"];
 var FACS = ["Toilets","Shade","Parking","Food nearby","Mobile signal","Prayer area","Paid entry"];
 
+/* Local names: only meanings found in a published source. spot = id of the spot it belongs to */
+var NAMES = [
+  {spot:"c5", title:"Edge of the World", local:"Jebel Fihrayn", meaning:"Jebel means mountain. \"Edge of the World\" is an English nickname made popular on social media - in Arabic it is simply Jebel Fihrayn. The meaning of \"Fihrayn\" was not found in a reliable source.",
+   story:"It is one of the cliffs of the Tuwaiq Escarpment. Tuwaiq is a \"little\" form of the word tawq - a ring or collar. Saudipedia says the range got the name because its peaks take the shape of a ring; Arab News describes it as the word for collar.",
+   sources:[["House of Saud","https://houseofsaud.com/travel/riyadh-edge-of-the-world/"],["Saudipedia - Tuwaiq","https://saudipedia.com/en/article/980/history/landmarks-and-monuments/tuwaiq-mountain"],["Arab News","https://arab.news/bh7me"]]},
+  {spot:"c1", title:"At-Turaif District, Diriyah", local:"At-Turaif, Ad-Diriyah", meaning:"At-Turaif's name is believed to come from its position at the edge of the valley (Wadi Hanifah). Diriyah is named after the Al-Duru' clan, the clan of its leader Mani' Al-Muraydi. It was once known as \"Al-Awja\".",
+   story:"In 1766 Imam Abdulaziz bin Mohammed bin Saud chose At-Turaif as the seat of government and home of the Saudi royal family because it was well protected. It became a UNESCO World Heritage Site in 2010.",
+   sources:[["Diriyah Authority (DGDA)","https://www.dgda.gov.sa/en/place/at-turaif"],["Saudipedia - Diriyah","https://saudipedia.com/en/diriyah-governorate"]]},
+  {spot:"c2", title:"Al Masmak Fortress", local:"Qasr al-Masmak", meaning:"Qasr means palace. The name Masmak comes from the thickness of its walls and structure - the local dialect later changed one \"s\" letter into another, giving \"Masmak\".",
+   story:"In January 1902 Abdulaziz ibn Saud, living in exile in Kuwait, came back to Riyadh and took the fortress in the Battle of Riyadh. The tower walls are 1.25 m (4 ft 1 in) thick.",
+   sources:[["Saudipedia","https://saudipedia.com/en/what-is-the-reason-for-naming-al-masmak-palace"],["Wikipedia","https://en.wikipedia.org/wiki/Al_Masmak_Palace"]]},
+  {spot:"c4", title:"Ushaiqer Heritage Village", local:"Ushaiqer", meaning:"\"Small Blonde\". It describes the small red mountain north of the village - in the old days locals used the words for red and blonde for the same colour.",
+   story:"The town was first called A'ekel. It is one of the oldest towns in the region.",
+   sources:[["Wikipedia","https://en.wikipedia.org/wiki/Ushaiger"]]},
+  {spot:"c7", title:"Heet Cave", local:"Ain Heet / Dahl Heet", meaning:"Ain means eye - from inside, the cave entrance looks like the shape of an eye. Dahl is the local word for a sinkhole.",
+   story:"It sits in Mount Al-Jubayl in Wadi Al-Sulay. It was found by geologists invited by King Abdulaziz to do the first survey of anhydrite rock in Saudi Arabia. At the bottom is a spring of water.",
+   sources:[["Arab News","https://arabnews.com/node/1824576"],["Saudipedia","https://saudipedia.com/en/ain-heet-cave"],["Destination KSA","https://destinationksa.com/?p=28786"]]},
+  {spot:"c10", title:"Thumamah National Park", local:"Ath-Thumamah", meaning:"Named after thumam, a desert bunchgrass (Panicum turgidum).",
+   story:"Before 1983 the park was a private farm of the late King Khalid. In 2019 a royal decree made it a nature reserve, renamed the King Khalid Royal Reserve.",
+   sources:[["Wikipedia - Al Thumamah","https://en.wikipedia.org/wiki/Al_Thumamah_(Riyadh)"],["Wikipedia - the reserve","https://en.wikipedia.org/wiki/Thumamah_National_Park"]]},
+  {spot:"c11", title:"Graffiti Rock 1", local:"Qaryat al-Asba / Musayqirah", meaning:"The local name comes from the nearby settlement of Musayqirah. The meaning of \"Qaryat al-Asba\" was not found in a reliable source.",
+   story:"It is one of few places with carvings of wild cattle (aurochs), an animal that no longer exists. The panel also shows people and handprints, some from the Neolithic (New Stone Age).",
+   sources:[["Saudi Arabia Tourism Guide","https://saudiarabiatourismguide.com/?p=3634"],["Birds of Saudi Arabia","https://www.birdsofsaudiarabia.com/2021/03/qaryat-al-asba-grafitti-rock-1-riyadh.html"],["Arabian Rock Art Heritage","https://saudi-archaeology.com/sites/qaryat-al-asba-graffiti-rocks/"]]},
+  {spot:"c12", title:"Petrified tree trunks, Al-Aflaj", local:"Al-Aflaj", meaning:"Aflaj is the plural of falaj - a water channel. In classical Arabic, falaj means to divide into shares, as the water was shared between farms.",
+   story:"Al-Aflaj is known for its underground canal system called al-Kharaz - small linked channels fed by a natural spring.",
+   sources:[["UNESCO","https://whc.unesco.org/document/152044"],["Wikipedia","https://en.wikipedia.org/wiki/Al_Aflaj_Governorate"]]},
+  {spot:"c9", title:"Al Kharrarah National Park", local:"Al-Kharrarah", meaning:"A village in Qatar with the same name gets it from \"khar\" - roughly the sound of running water. No source was found that explains the name of this Saudi park itself.",
+   story:"The park lies south of Al Muzahimiyah. Its lake only forms after heavy winter rain.",
+   sources:[["Wikipedia - Al Kharrara (Qatar)","https://en.wikipedia.org/wiki/Al_Kharrara"],["Visit Saudi","https://visitsaudi.com/en/riyadh/attractions/al-kharrarah-national-park"]]},
+  {spot:"c8", title:"Red Sands - Dirab entry", local:"Al-Muzahimiyah", meaning:"The meaning of \"Al-Muzahimiyah\" was not found in a reliable source.",
+   story:"The town was founded in the 16th century as a group of small farms that later joined into one village. It is called the west gate of Riyadh.",
+   sources:[["Wikipedia","https://en.wikipedia.org/wiki/Muzahmiyya"]]},
+  {spot:null, title:"Riyadh", local:"Ar-Riyadh", meaning:"\"Gardens\" or \"meadows\" - the plural of rawdah.",
+   story:"The name reflects the green spaces and valleys of the early settlements, where Wadi Hanifah and Wadi Al-Batha meet.",
+   sources:[["The National","https://www.thenationalnews.com/arts-culture/2025/09/19/saudi-arabia-name-meaning-makkah-madinah-riyadh-neom"],["Britannica","https://kids.britannica.com/students/article/Riyadh/63823"]]}
+];
+var WORDS = [
+  ["Jebel","Mountain","https://en.wikipedia.org/wiki/Tuwaiq"],
+  ["Wadi","Valley","https://en.wikipedia.org/wiki/Wadi_Thumamah"],
+  ["Rawdah","Garden or meadow","https://en.wikipedia.org/wiki/Rawda"],
+  ["Ain","Eye - also used for a spring","https://www.thenationalnews.com/arts-culture/2026/11/06/learn-arabic-to-english-waha-oasis/"],
+  ["Dahl","Sinkhole","https://destinationksa.com/?p=28786"],
+  ["Falaj (plural Aflaj)","Water channel","https://whc.unesco.org/document/152044"],
+  ["Qasr","Palace","https://en.wikipedia.org/wiki/Al_Masmak_Palace"]
+];
+function nameFor(id){ for (var i=0;i<NAMES.length;i++) if (NAMES[i].spot===id) return NAMES[i]; return null; }
+
 var REGION_MAPS = [
   ["Riyadh","https://goo.gl/maps/o1UzsqrnvAk"],
   ["Makkah","https://goo.gl/maps/xnGUpe5Wn9x"],
@@ -309,7 +367,7 @@ function base(o){
 }
 
 var SEED = [
-  base({id:"s1",name:"Strawberry Farm",category:"Farm",link:"https://maps.app.goo.gl/m8ADmrKwiJ4iUuNb9",plus:"RC3H+WXR Strawberry Garden, Al Ammariyah",notes:"Shared by Wendy.",created:1}),
+  base({id:"s1",name:"Strawberry Farm",category:"Farm",region:"Riyadh",link:"https://maps.app.goo.gl/m8ADmrKwiJ4iUuNb9",plus:"RC3H+WXR Strawberry Garden, Al Ammariyah",notes:"Shared by Wendy.",created:1}),
   base({id:"s2",name:"Hidden Canyon",category:"Canyon & Mountains",link:"https://maps.app.goo.gl/8rB8MpGcGVjqeJJp9",plus:"WW6R+4C9 Mawan Hidden Canyon, Khubay",notes:"Shared by Wendy: cars can drive to the location.",created:2}),
   base({id:"s3",name:"Pigeon Towers",category:"Heritage & Museum",link:"https://maps.app.goo.gl/WJRuD18RAc441E6E8",extra:"https://maps.app.goo.gl/DrC2EPZeFgMdpdU87",notes:"Shared by Wendy. Extra link = wild camping spot closer to the towers (near Khafs Daghrah Waterfall).",created:3}),
   base({id:"s4",name:"Pigeon Towers - Wild Camping",category:"Camping",link:"https://maps.app.goo.gl/DrC2EPZeFgMdpdU87",plus:"R5WX+4R Khafs Daghrah Waterfall",notes:"Shared by Wendy: wild camping closer to Pigeon Towers.",created:4}),
@@ -441,7 +499,21 @@ function matches(s){
   return true;
 }
 
+function updateCounts(){
+  function opts(el, list, allLabel, key, labelFn){
+    var keep = el.value, c = {};
+    spots.forEach(function(x){ c[x[key]] = (c[x[key]]||0)+1; });
+    el.innerHTML = '<option value="">'+esc(allLabel)+' ('+spots.length+')</option>' + list.map(function(v){
+      return '<option value="'+esc(v)+'">'+esc(labelFn?labelFn(v):v)+' ('+(c[v]||0)+')</option>';
+    }).join("");
+    el.value = keep;
+  }
+  opts($("fCat"), CATS, "All categories", "category");
+  opts($("fReg"), REGIONS.slice(1).concat(["Not set"]), "All regions", "region", function(v){ return v==="Not set" ? "Region not set" : v; });
+}
+
 function render(){
+  updateCounts();
   var arr = spots.filter(matches);
   var sort = $("fSort").value;
   arr.sort(function(a,b){
@@ -457,7 +529,11 @@ function render(){
   var visited = spots.filter(function(s){return s.status==="Visited";}).length;
   $("countLine").textContent = spots.length+" spots · "+visited+" visited";
 
-  if (!arr.length){ $("list").innerHTML = '<div class="empty">No spots match.<br>Try another filter or tap "+ Add spot".</div>'; return; }
+  if (!arr.length){
+    var cat=$("fCat").value, reg=$("fReg").value;
+    var what = "No "+(cat?cat+" ":"")+"spots"+(reg?(reg==="Not set"?" with no region set":" in "+reg):"")+" yet.";
+    $("list").innerHTML = '<div class="empty">'+esc(what)+'<br>The number after each region and category shows how many spots it has.<br>Try "All regions", or tap "+ Add spot".</div>'; return;
+  }
 
   var ios = isIOS();
   $("list").innerHTML = arr.map(function(s){
@@ -488,6 +564,7 @@ function render(){
       (s.plus?'<div class="meta" style="margin-top:6px">'+esc(s.plus)+'</div>':"")+
       (hasGPS(s)?'<div class="meta" style="margin-top:4px">GPS: '+s.lat.toFixed(6)+', '+s.lng.toFixed(6)+'</div>':"")+
       facs+
+      (nameFor(s.id)?'<button class="btn" style="width:100%;margin-top:8px" data-names="'+s.id+'">📖 Local name: '+esc(nameFor(s.id).local)+' - what it means</button>':"")+
       '<div class="stars">'+stars+'</div>'+
       (s.notes?'<div class="note">'+esc(s.notes)+'</div>':"")+
       '<div class="actions">'+
@@ -505,6 +582,20 @@ function render(){
       ((orig||extra||src)?'<div class="small-actions">'+orig+extra+src+'</div>':"")+
       '</div>'+
     '</div>';
+  }).join("");
+}
+
+function renderNames(){
+  $("namesList").innerHTML = NAMES.map(function(n){
+    var go = n.spot && find(n.spot) ? '<button class="btn" data-jump="'+n.spot+'">Go to spot</button>' : "";
+    return '<div class="card" id="name-'+(n.spot||"x")+'"><h3>'+esc(n.local)+'</h3>'+
+      '<div class="meta"><span class="badge">'+esc(n.title)+'</span></div>'+
+      '<div class="note"><b>Meaning:</b> '+esc(n.meaning)+'</div>'+
+      '<div class="note"><b>The story:</b> '+esc(n.story)+'</div>'+
+      '<div class="small-actions">'+go+n.sources.map(function(s){return '<a class="btn" href="'+esc(s[1])+'" target="_blank" rel="noopener">Source: '+esc(s[0])+'</a>';}).join("")+'</div></div>';
+  }).join("");
+  $("wordsList").innerHTML = WORDS.map(function(w){
+    return '<div class="card maplink"><div><b>'+esc(w[0])+'</b><div class="hint">'+esc(w[1])+'</div></div><a class="btn" style="min-width:90px" href="'+esc(w[2])+'" target="_blank" rel="noopener">Source</a></div>';
   }).join("");
 }
 
@@ -563,6 +654,7 @@ document.addEventListener("click", function(e){
   var id;
   if ((id=t.dataset.toggle)){ setOpen(id, !openCards[id]); return; }
   if ((id=t.dataset.jump)){ jumpTo(id); return; }
+  if ((id=t.dataset.names)){ var nt=document.querySelector('nav.tabs button[data-tab="names"]'); nt.click(); var el=$("name-"+id); if(el){ window.scrollTo(0, el.getBoundingClientRect().top+window.pageYOffset-(document.querySelector("header").offsetHeight+8)); el.classList.add("flash"); setTimeout(function(){el.classList.remove("flash");},1500);} return; }
   if (t.dataset.f){ filter=t.dataset.f; prefs.filter=filter; savePrefs(); renderChips(); render(); return; }
   if ((id=t.dataset.rate)){ var s=find(id); var v=+t.dataset.v; s.rating = s.rating===v?0:v; save(); render(); return; }
   if ((id=t.dataset.fav)){ var s2=find(id); s2.fav=!s2.fav; save(); render(); return; }
@@ -706,13 +798,14 @@ $("themeBtn").addEventListener("click", function(){ prefs.theme = prefs.theme===
 $("unitSel").addEventListener("change", function(){ prefs.unit=this.value; savePrefs(); render(); });
 
 /* init */
-fillSelect($("fCat"), CATS, "All categories");
-fillSelect($("fReg"), REGIONS.slice(1), "All regions");
+updateCounts();
+/* one-time fix: Al Ammariyah is in Riyadh Province (Wikipedia - Diriyah) */
+spots.forEach(function(x){ if (x.id==="s1" && x.region==="Not set") x.region="Riyadh"; });
 fillSelect($("eCat"), CATS); fillSelect($("eReg"), REGIONS); fillSelect($("eAccess"), ACCESS);
 fillSelect($("eFamily"), FAMILY); fillSelect($("eSeason"), SEASONS); fillSelect($("eStatus"), STATUS);
 $("unitSel").value = prefs.unit || "km";
 document.addEventListener("click", function(e){ var b=e.target.closest&&e.target.closest("#eStars .star"); if(b){ e.preventDefault(); } }, true);
-applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); render(); save();
+applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); renderNames(); render(); save();
 })();
 </script>
 </body>
