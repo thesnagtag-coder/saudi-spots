@@ -57,6 +57,16 @@ h1 span{color:var(--accent)}
 .small-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .small-actions .btn{flex:1;font-weight:500;padding:9px 6px;font-size:13px}
 #list{padding-bottom:70px}
+.card .details{display:none}
+.card.open .details{display:block}
+.cardhead{cursor:pointer}
+.toggle{display:block;width:100%;margin-top:10px;background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:9px;font-size:14px;font-weight:600;color:var(--teal);text-align:center}
+#filterToggle{margin-top:10px}
+#filterBox.hidden{display:none}
+.idx-group{margin-top:14px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.idx-item{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:6px;font-size:15px}
+.idx-item small{color:var(--muted);white-space:nowrap}
+.card.flash{box-shadow:0 0 0 3px var(--accent)}
 .empty{text-align:center;color:var(--muted);padding:40px 10px}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
 nav.tabs button{flex:1;background:none;border:none;padding:10px 4px 12px;font-size:12px;color:var(--muted)}
@@ -90,7 +100,10 @@ textarea.f{min-height:90px;resize:vertical}
       <h1>Saudi <span>Spots</span></h1>
       <div class="sub" id="countLine"></div>
     </div>
-    <button class="iconbtn" id="themeBtn" aria-label="Switch light or dark mode">☀️</button>
+    <div style="display:flex;gap:8px">
+      <button class="iconbtn" id="indexBtn" aria-label="Open index of all spots" style="padding:0 12px;font-size:15px;font-weight:600">☰ Index</button>
+      <button class="iconbtn" id="themeBtn" aria-label="Switch light or dark mode">☀️</button>
+    </div>
   </div>
 </header>
 
@@ -99,6 +112,8 @@ textarea.f{min-height:90px;resize:vertical}
   <!-- SPOTS -->
   <section class="section on" id="sec-spots">
     <input class="search" id="q" type="search" placeholder="Search name, notes, region..." autocomplete="off">
+    <button class="toggle" id="filterToggle" aria-expanded="true">Hide filters ▲</button>
+    <div id="filterBox">
     <div class="chips" id="chips"></div>
     <div class="row">
       <select id="fCat" aria-label="Category"></select>
@@ -111,6 +126,11 @@ textarea.f{min-height:90px;resize:vertical}
         <option value="near">Sort: Nearest to me</option>
         <option value="new">Sort: Newest added</option>
       </select>
+    </div>
+    </div>
+    <div class="row">
+      <button class="btn" id="openAll" style="flex:1">Open all</button>
+      <button class="btn" id="closeAll" style="flex:1">Close all</button>
     </div>
     <div id="list"></div>
   </section>
@@ -237,6 +257,18 @@ textarea.f{min-height:90px;resize:vertical}
   </div>
 </div>
 
+<!-- INDEX SHEET -->
+<div class="sheet" id="indexSheet">
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 style="margin:4px 0">Index</h2>
+      <button class="btn" id="indexClose" style="min-width:80px">Close</button>
+    </div>
+    <div class="hint">Tap a spot to jump straight to it.</div>
+    <div id="indexList"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -323,6 +355,7 @@ var prefs = loadPrefs();
 var filter = prefs.filter || "all";
 var myPos = null;
 var editing = null;
+var openCards = prefs.open || {};
 var formRating = 0;
 
 /* ---------- helpers ---------- */
@@ -364,13 +397,23 @@ function navLinks(s){
     var ll = s.lat+","+s.lng;
     return {
       google:"https://www.google.com/maps/dir/?api=1&destination="+ll,
-      waze:"https://waze.com/ul?ll="+ll+"&navigate=yes",
-      apple:"https://maps.apple.com/?daddr="+ll+"&dirflg=d"
+      waze:"https://www.waze.com/ul?ll="+s.lat+"%2C"+s.lng+"&navigate=yes&zoom=17",
+      apple:"https://maps.apple.com/?daddr="+ll+"&dirflg=d",
+      exact:true
     };
   }
+  /* No exact GPS: search by place name (plus codes removed - Waze does not read them) */
+  if (!s.plus){ /* only a short Google link: Waze cannot read it */
+    return { google: safeUrl(s.link) || "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q), waze:null, apple:null, exact:false, linkOnly:true };
+  }
+  var words = (s.plus ? s.plus.replace(/^[A-Z0-9]{4,8}\+[A-Z0-9]{2,3}\s*/i,"") : s.name).replace(/\s+/g," ").trim();
+  if (!words) words = s.name;
+  if (!/saudi/i.test(words)) words += ", Saudi Arabia";
   return {
     google: s.plus ? "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q) : (safeUrl(s.link) || "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q)),
-    waze:null, apple:null
+    waze:"https://www.waze.com/ul?q="+encodeURIComponent(words),
+    apple:"https://maps.apple.com/?q="+encodeURIComponent(words),
+    exact:false
   };
 }
 
@@ -433,12 +476,15 @@ function render(){
     var extra = safeUrl(s.extra) ? '<a class="btn" href="'+esc(s.extra)+'" target="_blank" rel="noopener">Extra link</a>' : "";
     var src = safeUrl(s.source) ? '<a class="btn" href="'+esc(s.source)+'" target="_blank" rel="noopener">Source</a>' : "";
     var orig = safeUrl(s.link) ? '<a class="btn" href="'+esc(s.link)+'" target="_blank" rel="noopener">Original link</a>' : "";
-    return '<div class="card">'+
+    var isOpen = openCards[s.id]===true;
+    return '<div class="card'+(isOpen?" open":"")+'" id="spot-'+s.id+'">'+
       '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">'+
-        '<h3>'+esc(s.name)+'</h3>'+
+        '<h3 class="cardhead" data-toggle="'+s.id+'">'+esc(s.name)+'</h3>'+
         '<button class="iconbtn" data-fav="'+s.id+'" aria-label="Favourite" style="min-width:40px;height:40px">'+(s.fav?"★":"☆")+'</button>'+
       '</div>'+
       '<div class="meta">'+badges+d+'</div>'+
+      '<button class="toggle" data-toggle="'+s.id+'" aria-expanded="'+isOpen+'">'+(isOpen?"Hide details ▲":"Show details and buttons ▼")+'</button>'+
+      '<div class="details">'+
       (s.plus?'<div class="meta" style="margin-top:6px">'+esc(s.plus)+'</div>':"")+
       (hasGPS(s)?'<div class="meta" style="margin-top:4px">GPS: '+s.lat.toFixed(6)+', '+s.lng.toFixed(6)+'</div>':"")+
       facs+
@@ -446,15 +492,18 @@ function render(){
       (s.notes?'<div class="note">'+esc(s.notes)+'</div>':"")+
       '<div class="actions">'+
         '<a class="btn primary" href="'+esc(n.google)+'" target="_blank" rel="noopener">Google</a>'+
-        (n.waze?'<a class="btn primary" href="'+esc(n.waze)+'" target="_blank" rel="noopener">Waze</a>':'<button class="btn" disabled>Waze</button>')+
-        (ios ? (n.apple?'<a class="btn primary" href="'+esc(n.apple)+'">Apple</a>':'<button class="btn" disabled>Apple</button>') : '<button class="btn" data-share="'+s.id+'">Share</button>')+
+        (n.waze ? '<a class="btn primary" href="'+esc(n.waze)+'" target="_blank" rel="noopener">Waze</a>' : '<button class="btn" data-edit="'+s.id+'">Add GPS</button>')+
+        (ios ? (n.apple ? '<a class="btn primary" href="'+esc(n.apple)+'">Apple</a>' : '<button class="btn" data-share="'+s.id+'">Share</button>') : '<button class="btn" data-share="'+s.id+'">Share</button>')+
       '</div>'+
+      (n.linkOnly ? '<div class="hint">Only a Google link so far. To use Waze: tap Original link, press and hold the pin, copy the GPS numbers, then tap Add GPS and paste them.</div>'
+        : (n.exact ? "" : '<div class="hint">No exact GPS yet - Waze and Apple search by place name. Check the pin before you drive.</div>'))+
       '<div class="small-actions">'+
         (hasGPS(s)?'<button class="btn" data-copy="'+s.id+'">Copy GPS</button>':"")+
         (ios?'<button class="btn" data-share="'+s.id+'">Share</button>':"")+
         '<button class="btn" data-edit="'+s.id+'">Edit</button>'+
       '</div>'+
       ((orig||extra||src)?'<div class="small-actions">'+orig+extra+src+'</div>':"")+
+      '</div>'+
     '</div>';
   }).join("");
 }
@@ -509,9 +558,11 @@ function saveForm(){
 
 /* ---------- events ---------- */
 document.addEventListener("click", function(e){
-  var t = e.target.closest ? e.target.closest("button,a") : e.target;
+  var t = e.target.closest ? e.target.closest("button,a,[data-toggle]") : e.target;
   if (!t) return;
   var id;
+  if ((id=t.dataset.toggle)){ setOpen(id, !openCards[id]); return; }
+  if ((id=t.dataset.jump)){ jumpTo(id); return; }
   if (t.dataset.f){ filter=t.dataset.f; prefs.filter=filter; savePrefs(); renderChips(); render(); return; }
   if ((id=t.dataset.rate)){ var s=find(id); var v=+t.dataset.v; s.rating = s.rating===v?0:v; save(); render(); return; }
   if ((id=t.dataset.fav)){ var s2=find(id); s2.fav=!s2.fav; save(); render(); return; }
@@ -527,6 +578,55 @@ document.addEventListener("click", function(e){
     window.scrollTo(0,0);
   }
 });
+
+/* ---------- fold-away cards, filters, index ---------- */
+function setOpen(id, on){
+  if (on) openCards[id]=true; else delete openCards[id];
+  prefs.open=openCards; savePrefs();
+  var c=$("spot-"+id); if(!c) return;
+  c.classList.toggle("open", on);
+  var bs=c.querySelectorAll("button.toggle");
+  for (var i=0;i<bs.length;i++){ bs[i].textContent = on?"Hide details ▲":"Show details and buttons ▼"; bs[i].setAttribute("aria-expanded", on); }
+}
+function setAll(on){
+  openCards={};
+  if (on) spots.forEach(function(s){ openCards[s.id]=true; });
+  prefs.open=openCards; savePrefs(); render();
+}
+function applyFilterBox(){
+  var hide = prefs.hideFilters===true;
+  $("filterBox").classList.toggle("hidden", hide);
+  $("filterToggle").textContent = hide ? "Show filters ▼" : "Hide filters ▲";
+  $("filterToggle").setAttribute("aria-expanded", !hide);
+}
+function renderIndex(){
+  var groups = {};
+  spots.forEach(function(s){ (groups[s.category]=groups[s.category]||[]).push(s); });
+  var h = "";
+  CATS.concat(Object.keys(groups).filter(function(c){return CATS.indexOf(c)===-1;})).forEach(function(cat){
+    var g = groups[cat]; if (!g) return;
+    g.sort(function(a,b){return a.name.localeCompare(b.name);});
+    h += '<div class="idx-group">'+esc(cat)+' ('+g.length+')</div>';
+    g.forEach(function(s){
+      h += '<button class="idx-item" data-jump="'+s.id+'"><span>'+(s.fav?"★ ":"")+esc(s.name)+'</span><small>'+(s.status==="Visited"?"✓ Visited":(s.rating?s.rating+"★":""))+'</small></button>';
+    });
+  });
+  $("indexList").innerHTML = h || '<div class="empty">No spots yet.</div>';
+}
+function openIndex(){ renderIndex(); $("indexSheet").classList.add("open"); document.body.style.overflow="hidden"; }
+function closeIndex(){ $("indexSheet").classList.remove("open"); document.body.style.overflow=""; }
+function jumpTo(id){
+  closeIndex();
+  var spotsTab=document.querySelector('nav.tabs button[data-tab="spots"]'); if (spotsTab && !spotsTab.classList.contains("on")) spotsTab.click();
+  if (!$("spot-"+id)){ /* hidden by a filter: clear filters so it shows */
+    filter="all"; prefs.filter="all"; savePrefs(); $("q").value=""; $("fCat").value=""; $("fReg").value=""; renderChips(); render();
+  }
+  setOpen(id, true);
+  var c=$("spot-"+id); if(!c) return;
+  var y = c.getBoundingClientRect().top + window.pageYOffset - (document.querySelector("header").offsetHeight + 8);
+  window.scrollTo(0, y);
+  c.classList.add("flash"); setTimeout(function(){ c.classList.remove("flash"); }, 1500);
+}
 
 function find(id){ for (var i=0;i<spots.length;i++) if (spots[i].id===id) return spots[i]; return null; }
 
@@ -555,6 +655,12 @@ $("fSort").addEventListener("change", function(){
 });
 
 $("addBtn").addEventListener("click", function(){ openForm(null); });
+$("indexBtn").addEventListener("click", openIndex);
+$("indexClose").addEventListener("click", closeIndex);
+$("indexSheet").addEventListener("click", function(e){ if (e.target===this) closeIndex(); });
+$("filterToggle").addEventListener("click", function(){ prefs.hideFilters = !(prefs.hideFilters===true); savePrefs(); applyFilterBox(); });
+$("openAll").addEventListener("click", function(){ setAll(true); });
+$("closeAll").addEventListener("click", function(){ setAll(false); });
 $("cancelBtn").addEventListener("click", closeForm);
 $("saveBtn").addEventListener("click", saveForm);
 $("sheet").addEventListener("click", function(e){ if (e.target===this) closeForm(); });
@@ -606,7 +712,7 @@ fillSelect($("eCat"), CATS); fillSelect($("eReg"), REGIONS); fillSelect($("eAcce
 fillSelect($("eFamily"), FAMILY); fillSelect($("eSeason"), SEASONS); fillSelect($("eStatus"), STATUS);
 $("unitSel").value = prefs.unit || "km";
 document.addEventListener("click", function(e){ var b=e.target.closest&&e.target.closest("#eStars .star"); if(b){ e.preventDefault(); } }, true);
-applyTheme(); renderChips(); renderRegionMaps(); render(); save();
+applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); render(); save();
 })();
 </script>
 </body>
