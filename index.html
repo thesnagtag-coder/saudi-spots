@@ -75,7 +75,7 @@ h1 span{color:var(--accent)}
 .card.flash{box-shadow:0 0 0 3px var(--accent)}
 .empty{text-align:center;color:var(--muted);padding:40px 10px}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;background:none;border:none;padding:10px 4px 12px;font-size:12px;color:var(--muted)}
+nav.tabs button{flex:1;min-width:0;background:none;border:none;padding:10px 2px 12px;font-size:11px;color:var(--muted)}
 nav.tabs button b{display:block;font-size:20px;margin-bottom:2px}
 nav.tabs button.on{color:var(--accent);font-weight:700}
 .fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
@@ -165,6 +165,14 @@ textarea.f{min-height:90px;resize:vertical}
     <div class="card"><h3>Not looked up yet</h3><div class="note">Mawan (Hidden Canyon), Sha'ib Luha, Khafs Ibn Rasheed, Khafs Daghrah, Al Ammariyah, Lake Prodan, Pigeon Towers and Red Sand Dunes - their meanings still need to be found in a reliable source.</div></div>
   </section>
 
+  <!-- EVENTS -->
+  <section class="section" id="sec-events">
+    <h2 style="margin:6px 0">Festivals & Events</h2>
+    <div class="info">Riyadh area. Only dates that have been published are shown. Dates can change - always check the official link before you go.</div>
+    <div id="eventsList"></div>
+    <div class="hint" style="margin:10px 0">Last checked: 21 Nov 2026.</div>
+  </section>
+
   <!-- SETTINGS -->
   <section class="section" id="sec-more">
     <h2 style="margin:6px 0">Backup & Settings</h2>
@@ -215,8 +223,9 @@ textarea.f{min-height:90px;resize:vertical}
 
 <nav class="tabs">
   <button class="on" data-tab="spots"><b>📍</b>Spots</button>
-  <button data-tab="maps"><b>🗺️</b>Region maps</button>
+  <button data-tab="maps"><b>🗺️</b>Maps</button>
   <button data-tab="names"><b>📖</b>Names</button>
+  <button data-tab="events"><b>🎉</b>Events</button>
   <button data-tab="more"><b>⚙️</b>Backup</button>
 </nav>
 
@@ -354,6 +363,27 @@ var WORDS = [
 ];
 function nameFor(id){ for (var i=0;i<NAMES.length;i++) if (NAMES[i].spot===id) return NAMES[i]; return null; }
 
+/* Events: start/end as YYYY-MM-DD, or null when not officially announced */
+var EVENTS = [
+  {name:"Riyadh Season 2026 - \"Big Time\"", start:"2026-10-21", end:"2027-03-01", when:"From 21 Oct 2026 - a 10-week main programme; Visit Saudi lists the season until 1 Mar 2027", where:"Venues across Riyadh (Boulevard City, Boulevard World, Riyadh Zoo and more)", notes:"Tickets on webook.com and the webook app.", link:"https://riyadhseason.com", source:"https://saudilifeguide.com/riyadh-season-2026/"},
+  {name:"Boulevard World", start:"2026-10-30", end:null, when:"Opened 30 Oct 2026 for Riyadh Season", where:"Boulevard World, Riyadh", notes:"Tickets from SAR 30 on weekdays.", link:"https://riyadhseason.com", source:"https://www.listmag.com/en/see-do/events-entertainment/unmissable-events-already-confirmed-for-riyadh-season-2025-3741"},
+  {name:"GC Playoffs (show jumping)", start:"2026-11-18", end:"2026-11-21", when:"18-21 Nov 2026", where:"Riyadh", notes:"Part of Riyadh Season.", link:"https://riyadhseason.com", source:"https://www.factmagazines.com/saudi-arabia/riyadh-season-all-the-important-dates-for-your-diary/"},
+  {name:"XP Music Futures", start:"2026-11-26", end:"2026-11-28", when:"26-28 Nov 2026", where:"JAX District, Riyadh", notes:"Music conference and showcases. Ticket details to be announced.", link:"https://xpmusicfutures.com", source:"https://listmag.com/en/see-and-do/events-entertainment/riyadh-to-host-sixth-edition-of-xp-music-futures-in-november-4342"},
+  {name:"Six Kings Slam (tennis)", start:"2026-12-27", end:"2026-12-30", when:"27-30 Dec 2026 (moved from October)", where:"ANB Arena, Riyadh", notes:"Tickets from SAR 200.", link:"https://riyadhseason.com", source:"https://saudilifeguide.com/riyadh-season-2026/"},
+  {name:"Riyadh Season World Snooker Tour", start:"2027-03-04", end:"2027-03-06", when:"4-6 Mar 2027", where:"Expected at Boulevard City, Riyadh", notes:"", link:"https://riyadhseason.com", source:"https://www.listmag.com/en/see-do/events-entertainment/unmissable-events-already-confirmed-for-riyadh-season-3741"},
+  {name:"King Abdulaziz Camel Festival", start:null, end:null, when:"2026-27 dates not officially announced yet. Recent editions started around 1 December.", where:"Al-Sayahid, about 120 km (75 mi) north-east of Riyadh", notes:"Camel races and beauty contests, heritage market, falcons. Desert tents and hotels fill up fast.", link:"https://www.arabnews.pk/tags/king-abdulaziz-camel-festival", source:"https://www.arabnews.pk/node/2418631/saudi-arabia"},
+  {name:"Diriyah Season", start:null, end:null, when:"2026-27 dates not announced yet. Last season ran Nov 2025 to end of Mar 2026.", where:"Diriyah", notes:"Culture and heritage events around At-Turaif.", link:"https://www.diriyah.sa", source:"https://www.tradearabia.com/tag/Diriyah-Season"},
+  {name:"MDLBEAST Soundstorm", start:null, end:null, when:"The 2026 edition (3-4 Dec) was cancelled. Organisers say it returns in 2027.", where:"Banban, north of Riyadh", notes:"16+ music festival.", link:"https://www.mdlbeast.com", source:"https://djmag.com/news/soundstorm-festival-cancels-2026-edition"}
+];
+function eventStatus(e){
+  var today = new Date(); today.setHours(0,0,0,0);
+  if (!e.start) return /cancel/i.test(e.when) ? ["Cancelled","grey"] : ["Date not announced","grey"];
+  var st = new Date(e.start+"T00:00:00"), en = e.end ? new Date(e.end+"T23:59:59") : null;
+  if (today < st) return ["Coming up",""];
+  if (!en || today <= en) return ["On now","warm"];
+  return ["Finished","grey"];
+}
+
 var REGION_MAPS = [
   ["Riyadh","https://goo.gl/maps/o1UzsqrnvAk"],
   ["Makkah","https://goo.gl/maps/xnGUpe5Wn9x"],
@@ -395,10 +425,18 @@ var SEED = [
   base({id:"c7",name:"Heet Cave (Ain Heet)",category:"Cave",region:"Riyadh",lat:24.4861,lng:46.9972,suggested:true,source:"https://visitsaudi.com/en/riyadh/attractions/heet-cave",notes:"Limestone cave with an underground lake, about 30-40 km (19-25 mi) south-east of Riyadh, off the Al Kharj road. No ticket needed (Visit Saudi). No official opening hours found.\nSteep, loose slope down to the entrance - wear sturdy shoes. No toilets or food nearby.\nOne travel guide says access may currently be restricted - check before you go. Don't swim: the water depth and quality are not known.",created:20}),
   base({id:"c8",name:"Red Sands - Dirab entry",category:"Desert & Dunes",region:"Riyadh",lat:24.3647,lng:46.3614,access:"Regular car",season:"Winter",suggested:true,source:"https://www.lonelyplanet.com/points-of-interest/red-sands/1532498",notes:"Deep red dunes near Al Muzahimiyah, about 55-80 km (34-50 mi) south-west of Riyadh. Quad bikes for hire from stalls along the highway. Busy at weekends.\nDriving up the dunes needs a 4x4 and an experienced driver.\nBest Nov-Feb, at sunset. GPS = main Dirab entry point (several sources agree within about 1 km (0.6 mi)).",created:21}),
   base({id:"c9",name:"Al Kharrarah National Park",category:"Camping",region:"Riyadh",lat:24.40573,lng:46.24540,season:"Winter",suggested:true,source:"https://whatsonsaudiarabia.com/2022/01/best-camping-spots-in-riyadh/",notes:"National park about 100 km (62 mi) south-west of Riyadh, south of Al Muzahimiyah. Red dunes and acacia trees. The lake only forms after heavy winter rain.\nPopular for camping. Camping in national parks needs a Nabati permit in season - get one before you go. Bring all your own supplies.\nBest Nov-Mar. GPS = the lake (a second source's campsite coordinates are within about 200 m (656 ft)).",created:22}),
-  base({id:"c10",name:"Thumamah National Park",category:"Camping",region:"Riyadh",plus:"Thumamah National Park, Riyadh",access:"Regular car",family:"Yes",season:"Winter",suggested:true,source:"https://houseofsaud.com/travel/saudi-desertcamping-guide/",notes:"Desert park north of Riyadh (sources give 40-60 km (25-37 mi)). The easiest option for a first desert camp: 200+ Bedouin-style camps with kitchens, grill areas and toilets.\nBook online ahead for the parking-area camping zones. Quad bikes, picnics and stargazing. Can be busy.\nNo exact GPS for the entrance - opens in Google Maps by name.",created:23}),
+  base({id:"c10",name:"Thumamah National Park",category:"Camping",region:"Riyadh",lat:25.2429632,lng:46.6332607,plus:"Thumamah National Park, Riyadh",access:"Regular car",family:"Yes",season:"Winter",suggested:true,source:"https://houseofsaud.com/travel/saudi-desertcamping-guide/",notes:"Desert park north of Riyadh (sources give 40-60 km (25-37 mi)). The easiest option for a first desert camp: 200+ Bedouin-style camps with kitchens, grill areas and toilets.\nBook online ahead for the parking-area camping zones. Quad bikes, picnics and stargazing. Can be busy.\nPin = Google Maps place pin for King Khalid Royal Reserve (the park's name since 2019) - the reserve's map pin, not a specific gate.",created:23}),
   base({id:"c11",name:"Graffiti Rock 1 (Qaryat al-Asba)",category:"Heritage & Museum",region:"Riyadh",plus:"Qaryat al Asba, Musayqirah, Riyadh",suggested:true,source:"https://saudiarabiatourismguide.com/?p=3634",notes:"Ancient rock carvings (camels, ostriches, wild cattle, people), some from the Neolithic era. Visible from the Makkah Highway near the Musayqirah exit, about 100-140 km (62-87 mi) west of Riyadh - sources differ.\nThe main rock is fenced; the gate is usually open. Please don't touch the carvings.\nNo exact GPS yet - opens in Google Maps by name.",created:24}),
   base({id:"c12",name:"Petrified tree trunks, Al-Aflaj",category:"Fossils & Geology",region:"Riyadh",plus:"Al-Ajalaiyah, Al-Aflaj",suggested:true,source:"https://www.bernama.com/en/news.php/politics/world/news.php?id=2451804",notes:"Fossilised tree trunks and branches from the late Permian period, about 40 km (25 mi) east of Al-Ajalaiyah Centre in Al-Aflaj Governorate (Saudi Press Agency).\nThis is far south of Riyadh - plan it as a long day or overnight trip. Exact location not published: go with a local guide.",created:25}),
-  base({id:"c1",name:"At-Turaif District, Diriyah",category:"Heritage & Museum",region:"Riyadh",lat:24.73413,lng:46.57247,access:"Regular car",family:"Yes",suggested:true,source:"https://whc.unesco.org/document/168966",notes:"UNESCO World Heritage Site (2010). Open-air heritage museum. GPS = centre of the site (Saad Ibn Saud Palace) from the UNESCO file. Check opening hours and tickets before you go.",created:8}),
+  base({id:"c13",name:"Kingdom Centre Sky Bridge",category:"Viewpoint",region:"Riyadh",lat:24.711293,lng:46.6744619,access:"Regular car",family:"Yes",fac:["Paid entry","Parking"],suggested:true,source:"https://visitsaudi.com/en/riyadh/attractions/sky-bridge-at-kingdom-center",notes:"Glass bridge on the 99th floor of Kingdom Centre - a fast lift takes you up. Ticket counter is inside the mall.\nHours (Visit Saudi): daily 12:00 PM-10:15 PM.\nTickets (House of Saud, early 2026): adult SAR 138, child 4-10 SAR 69, under 4 free.\nNot for anyone afraid of heights. Sunset is the favourite time.\nPin = Google Maps place pin.",created:26}),
+  base({id:"c14",name:"Riyadh Zoo",category:"Park & Garden",region:"Riyadh",lat:24.6751702,lng:46.7374324,access:"Regular car",family:"Yes",fac:["Paid entry"],suggested:true,source:"https://riyadhzoo.ncw.gov.sa/english/information/",notes:"In Al Malaz. Visit Saudi lists 1,300+ animals.\nOfficial hours: Sat-Thu 10 AM-5 PM, Fri 1-5 PM. Tickets online; under 3 free.\nIt reopened on 19 Nov 2026 as part of Riyadh Season - season hours and prices may differ, so check the official site first.\nPin = Google Maps place pin.",created:27}),
+  base({id:"c15",name:"Souq Al Zal",category:"Heritage & Museum",region:"Riyadh",lat:24.6289429,lng:46.7121915,access:"Regular car",suggested:true,source:"https://en.wikipedia.org/wiki/Souq_al-Zal",notes:"Riyadh's oldest traditional market, over 100 years old, in Ad-Dirah near Masmak Fortress. Carpets, antiques, bisht cloaks, perfume and crafts.\nNo official hours found - check before you go.\nPin = Google Maps place pin.",created:28}),
+  base({id:"c16",name:"King Abdullah Park (Al Malaz)",category:"Park & Garden",region:"Riyadh",lat:24.6663657,lng:46.7371594,access:"Regular car",family:"Yes",suggested:true,source:"https://houseofsaud.com/travel/riyadh-parks/",notes:"One of Riyadh's biggest parks - 318,000 m2 (3.4 million sq ft) - opened in 2013 on the old Al Malaz racecourse.\nEvening musical fountain show (House of Saud: daily from 6:15 PM).\nHours and entry fees differ between sources - check before you go.\nPin = Google Maps place pin.",created:29}),
+  base({id:"c17",name:"Al Murabba Historical Palace",category:"Heritage & Museum",region:"Riyadh",lat:24.6465518,lng:46.709169,access:"Regular car",suggested:true,source:"https://visitsaudi.com/en/riyadh/attractions/al-murabba-palace",notes:"King Abdulaziz's palace from the 1930s, now a museum with his belongings and photos. Part of the King Abdulaziz Historical Center, next to the National Museum.\nHours (Visit Saudi): Sat-Thu 9 AM-8 PM, Fri 5-8 PM.\nPin = Google Maps place pin.",created:30}),
+  base({id:"c18",name:"Bujairi Terrace, Diriyah",category:"Heritage & Museum",region:"Riyadh",lat:24.7373233,lng:46.5747979,access:"Regular car",family:"Yes",fac:["Food nearby","Parking"],suggested:true,source:"https://www.diriyah.sa/bujairi-terrace/",notes:"Restaurants and cafes looking over At-Turaif (UNESCO). Walk across the bridge to At-Turaif.\nHours (diriyah.sa): daily 9 AM-3 AM.\nParking SAR 30 for 3 hours, SAR 10 each extra hour; valet SAR 195.\nAccess was free 1 May-30 Sep 2026 - check on diriyah.sa whether you need an access pass now.\nPin = Google Maps place pin.",created:31}),
+  base({id:"c19",name:"Wadi Namar Waterfall & Dam",category:"Park & Garden",region:"Riyadh",lat:24.5719945,lng:46.6797341,access:"Regular car",family:"Yes",suggested:true,source:"https://www.lonelyplanet.com/points-of-interest/wadi-namar/1601522",notes:"South Riyadh. A 2 km (1.2 mi) dam with a lake, walkways, rocky hills and an artificial waterfall.\nFree. Travel sites list it as open 24 hours - no official hours found.\nPin = Google Maps place pin (the waterfall).",created:32}),
+  base({id:"c20",name:"Salam Park",category:"Park & Garden",region:"Riyadh",lat:24.6180184,lng:46.7081566,access:"Regular car",family:"Yes",fac:["Paid entry","Food nearby"],suggested:true,source:"https://houseofsaud.com/travel/riyadh-parks/",notes:"Central Riyadh. A 3.3-hectare (8-acre) lake with boat rides and a 1 km (0.6 mi) walking track.\nEntry about SAR 5.25; under 3 and visitors with disabilities free. Generally 4 PM-2 AM - hours change by season (House of Saud 2026).\nBusy at weekends and Eid.\nPin = Google Maps place pin.",created:33}),
+  base({id:"c1",name:"At-Turaif District, Diriyah",category:"Heritage & Museum",region:"Riyadh",lat:24.73413,lng:46.57247,access:"Regular car",family:"Yes",suggested:true,source:"https://whc.unesco.org/document/168966",notes:"UNESCO World Heritage Site (2010). Open-air heritage museum. Hours (diriyah.sa): daily 5 PM-12 AM, last entry 11 PM. GPS = centre of the site (Saad Ibn Saud Palace) from the UNESCO file.",created:8}),
   base({id:"c2",name:"Al Masmak Fortress",category:"Heritage & Museum",region:"Riyadh",lat:24.63111,lng:46.71333,access:"Regular car",family:"Yes",suggested:true,source:"https://www.atlasobscura.com/places/al-masmak-fortress",notes:"Museum in the old centre of Riyadh (opened to the public in 1995). Check opening hours before you go.",created:9}),
   base({id:"c3",name:"National Museum of Saudi Arabia",category:"Heritage & Museum",region:"Riyadh",lat:24.64732,lng:46.71079,access:"Regular car",family:"Yes",suggested:true,source:"https://travel.sygic.com/nl/poi/national-museum-of-saudi-arabia-poi:5242612",notes:"Indoor museum in Al Murabba, Riyadh - a good pick for hot days. Check opening hours and tickets before you go.",created:10}),
   base({id:"c4",name:"Ushaiqer Heritage Village",category:"Heritage & Museum",region:"Riyadh",lat:25.34250,lng:45.18333,access:"Regular car",family:"Yes",suggested:true,source:"https://saudipedia.com/en/ushayqir-heritage-village",notes:"Restored mud-brick village with a museum, about 200 km (124 mi) north-west of Riyadh, near Shaqra. GPS = village centre. Plan fuel and water for the drive, and check opening hours before you go.",created:11})
@@ -410,6 +448,8 @@ function load(){
     a = a.map(base);
     var gone = (loadPrefs().deletedSeeds) || [];
     SEED.forEach(function(s){ var have=false; for (var i=0;i<a.length;i++) if (a[i].id===s.id) have=true; if (!have && gone.indexOf(s.id)===-1) a.push(base(JSON.parse(JSON.stringify(s)))); });
+    a.forEach(function(x){ if (x.id==="c1") x.notes=String(x.notes||"").replace("GPS = centre of the site (Saad Ibn Saud Palace) from the UNESCO file. Check opening hours and tickets before you go.","Hours (diriyah.sa): daily 5 PM-12 AM, last entry 11 PM. GPS = centre of the site (Saad Ibn Saud Palace) from the UNESCO file.");
+      if (x.id==="c10" && /No exact GPS for the entrance/.test(x.notes||"")){ x.notes=x.notes.replace("No exact GPS for the entrance - opens in Google Maps by name.","Pin = Google Maps place pin for King Khalid Royal Reserve (the park's name since 2019) - the reserve's map pin, not a specific gate."); } });
     a.forEach(function(x){ for (var i=0;i<SEED.length;i++){ var sd=SEED[i];
       if (sd.id===x.id && typeof sd.lat==="number" && !(typeof x.lat==="number")){ x.lat=sd.lat; x.lng=sd.lng; if (sd.notes && /Location not confirmed yet/.test(x.notes||"")) x.notes=sd.notes; if (sd.name!==x.name && /National Park gate/.test(x.name)) x.name=sd.name; }
     }});
@@ -630,6 +670,20 @@ function renderNames(){
   }).join("");
 }
 
+function renderEvents(){
+  var order = {"On now":0,"Coming up":1,"Date not announced":2,"Cancelled":3,"Finished":4};
+  var list = EVENTS.slice().sort(function(a,b){ var sa=eventStatus(a)[0], sb=eventStatus(b)[0]; return (order[sa]-order[sb]) || String(a.start||"9").localeCompare(String(b.start||"9")); });
+  $("eventsList").innerHTML = list.map(function(e){
+    var st = eventStatus(e);
+    return '<div class="card"><h3>'+esc(e.name)+'</h3>'+
+      '<div class="meta"><span class="badge '+st[1]+'">'+esc(st[0])+'</span></div>'+
+      '<div class="note"><b>When:</b> '+esc(e.when)+'</div>'+
+      '<div class="note"><b>Where:</b> '+esc(e.where)+'</div>'+
+      (e.notes?'<div class="note">'+esc(e.notes)+'</div>':"")+
+      '<div class="small-actions"><a class="btn primary" href="'+esc(e.link)+'" target="_blank" rel="noopener">Official info</a><a class="btn" href="'+esc(e.source)+'" target="_blank" rel="noopener">Source</a></div></div>';
+  }).join("");
+}
+
 function renderRegionMaps(){
   $("regionMaps").innerHTML = REGION_MAPS.map(function(r,i){
     return '<div class="card maplink"><div><b>'+(i+1)+'. '+esc(r[0])+'</b><div class="hint">'+esc(r[1].replace("https://",""))+'</div></div><a class="btn primary" style="min-width:90px" href="'+esc(r[1])+'" target="_blank" rel="noopener">Open</a></div>';
@@ -845,7 +899,7 @@ fillSelect($("eCat"), CATS); fillSelect($("eReg"), REGIONS); fillSelect($("eAcce
 fillSelect($("eFamily"), FAMILY); fillSelect($("eSeason"), SEASONS); fillSelect($("eStatus"), STATUS);
 $("unitSel").value = prefs.unit || "km";
 document.addEventListener("click", function(e){ var b=e.target.closest&&e.target.closest("#eStars .star"); if(b){ e.preventDefault(); } }, true);
-applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); renderNames(); render(); save();
+applyTheme(); applyFilterBox(); renderChips(); renderRegionMaps(); renderNames(); renderEvents(); render(); save();
 })();
 </script>
 </body>
