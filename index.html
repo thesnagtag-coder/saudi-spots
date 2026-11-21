@@ -57,6 +57,9 @@ h1 span{color:var(--accent)}
 .small-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .small-actions .btn{flex:1;font-weight:500;padding:9px 6px;font-size:13px}
 #list{padding-bottom:70px}
+.searchrow{display:flex;gap:8px;align-items:stretch;margin-top:10px}
+.searchrow .search{margin-top:0;flex:1;min-width:0}
+.searchrow .btn{min-width:56px;font-size:18px}
 .card .details{display:none}
 .card.open .details{display:block}
 .cardhead{cursor:pointer}
@@ -111,7 +114,11 @@ textarea.f{min-height:90px;resize:vertical}
 
   <!-- SPOTS -->
   <section class="section on" id="sec-spots">
-    <input class="search" id="q" type="search" placeholder="Search name, notes, region..." autocomplete="off">
+    <form id="searchForm" class="searchrow" role="search" action="#">
+      <input class="search" id="q" type="search" enterkeyhint="search" placeholder="Search e.g. edge of the world, camping..." autocomplete="off">
+      <button type="submit" class="btn primary" id="searchBtn" aria-label="Search">🔍</button>
+    </form>
+    <div class="hint" id="searchInfo" style="margin-top:6px"></div>
     <button class="toggle" id="filterToggle" aria-expanded="true">Hide filters ▲</button>
     <div id="filterBox">
     <div class="chips" id="chips"></div>
@@ -481,9 +488,20 @@ function renderChips(){
   $("chips").innerHTML = list.map(function(c){ return '<button class="chip'+(filter===c[0]?" on":"")+'" data-f="'+c[0]+'">'+esc(c[1])+'</button>'; }).join("");
 }
 
+function norm(t){ return String(t||"").toLowerCase().replace(/['’`]/g,"").replace(/[^a-z0-9+]+/g," ").trim(); }
+var STOP = {"the":1,"of":1,"a":1,"an":1,"and":1,"in":1,"at":1,"to":1};
+function queryWords(){ return norm($("q").value).split(" ").filter(function(w){ return w && !STOP[w]; }); }
+function haystack(s){
+  var n = nameFor(s.id);
+  return norm([s.name,s.notes,s.region,s.category,s.plus,s.access,(s.fac||[]).join(" "),n?n.local+" "+n.meaning:""].join(" "));
+}
 function matches(s){
-  var q = $("q").value.trim().toLowerCase();
-  if (q && (s.name+" "+s.notes+" "+s.region+" "+s.category+" "+s.plus).toLowerCase().indexOf(q)===-1) return false;
+  var words = queryWords();
+  if (words.length){ /* a search looks through ALL spots, whatever filters are set */
+    var h = " "+haystack(s)+" ";
+    for (var i=0;i<words.length;i++) if (h.indexOf(words[i])===-1) return false;
+    return true;
+  }
   var c=$("fCat").value, r=$("fReg").value;
   if (c && s.category!==c) return false;
   if (r && s.region!==r) return false;
@@ -516,7 +534,10 @@ function render(){
   updateCounts();
   var arr = spots.filter(matches);
   var sort = $("fSort").value;
+  var qw = queryWords();
+  function score(x){ var nm=" "+norm(x.name)+" "; for (var i=0;i<qw.length;i++) if (nm.indexOf(qw[i])===-1) return 1; return 0; }
   arr.sort(function(a,b){
+    if (qw.length){ var d0 = score(a)-score(b); if (d0) return d0; } /* best match (name) first */
     if (sort==="rating") return (b.rating-a.rating) || a.name.localeCompare(b.name);
     if (sort==="new") return (b.created||0)-(a.created||0);
     if (sort==="near" && myPos){
@@ -529,6 +550,9 @@ function render(){
   var visited = spots.filter(function(s){return s.status==="Visited";}).length;
   $("countLine").textContent = spots.length+" spots · "+visited+" visited";
 
+  var words = queryWords();
+  $("searchInfo").textContent = words.length ? (arr.length+" spot"+(arr.length===1?"":"s")+" found for \""+$("q").value.trim()+"\" - searching all spots, filters ignored.") : "";
+  if (words.length && !arr.length){ $("list").innerHTML = '<div class="empty">Nothing found for "'+esc($("q").value.trim())+'".<br>Try one word, e.g. "edge" or "cave".</div>'; return; }
   if (!arr.length){
     var cat=$("fCat").value, reg=$("fReg").value;
     var what = "No "+(cat?cat+" ":"")+"spots"+(reg?(reg==="Not set"?" with no region set":" in "+reg):"")+" yet.";
@@ -734,6 +758,15 @@ function share(s){
 }
 
 $("q").addEventListener("input", render);
+$("searchForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  render();
+  $("q").blur(); /* closes the phone keyboard so results can be seen */
+  var cards = document.querySelectorAll("#list .card");
+  if (cards.length===1){ setOpen(cards[0].id.replace("spot-",""), true); }
+  var first = $("list").firstElementChild;
+  if (first){ window.scrollTo(0, first.getBoundingClientRect().top + window.pageYOffset - (document.querySelector("header").offsetHeight + 8)); }
+});
 $("fCat").addEventListener("change", render);
 $("fReg").addEventListener("change", render);
 $("fSort").addEventListener("change", function(){
