@@ -88,6 +88,8 @@ nav.tabs button.on{color:var(--accent);font-weight:700}
 .pk-head{display:flex;align-items:center;gap:6px}.pk-head h3{flex:1;margin:0}
 .pk-add{display:flex;gap:6px;margin-top:8px}.pk-add input{flex:1;min-width:0}.pk-add .btn{min-width:64px}
 .pk-bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px}.pk-bar i{display:block;height:100%;background:var(--teal)}
+.btn.wa{background:#128C7E;border-color:#128C7E;color:#fff}
+.sendrow{display:flex;gap:8px;margin-top:8px}.sendrow .btn{flex:1;font-size:14px;padding:10px 6px}
 .fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:31;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center}
 .sheet.open{display:flex}
@@ -104,6 +106,8 @@ textarea.f{min-height:90px;resize:vertical}
 .toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;display:none;max-width:90%;text-align:center}
 .section{display:none}.section.on{display:block}
 .maplink{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.maplink>div:first-child{min-width:0;flex:1;overflow-wrap:anywhere}
+.maplink>div:last-child{flex:none}
 .info{font-size:14px;background:var(--teal-soft);border-radius:14px;padding:12px;margin:10px 0}
 .danger{color:#B3261E;border-color:#E8C4C0}
 </style>
@@ -191,6 +195,7 @@ textarea.f{min-height:90px;resize:vertical}
       <div class="pk-bar"><i id="pkBar"></i></div>
       <div class="hint" id="pkCount"></div>
       <div class="small-actions"><button class="btn" data-pk="untick">Untick all</button><button class="btn" data-pk="addsec">+ Add section</button><button class="btn" data-pk="reset">Reset list</button></div>
+      <div class="sendrow" id="pkSend"></div>
       <div class="small-actions" id="pkUndoRow" style="display:none"><button class="btn accent" data-pk="undo" id="pkUndo">Undo delete</button></div>
     </div>
     <div id="pkList"></div>
@@ -669,14 +674,14 @@ function render(){
       '<div class="actions">'+
         '<a class="btn primary" href="'+esc(n.google)+'" target="_blank" rel="noopener">Google</a>'+
         (n.waze ? '<a class="btn primary" href="'+esc(n.waze)+'" target="_blank" rel="noopener">Waze</a>' : '<button class="btn" data-edit="'+s.id+'">Add GPS</button>')+
-        (ios ? (n.apple ? '<a class="btn primary" href="'+esc(n.apple)+'">Apple</a>' : '<button class="btn" data-share="'+s.id+'">Share</button>') : '<button class="btn" data-share="'+s.id+'">Share</button>')+
+        (ios && n.apple ? '<a class="btn primary" href="'+esc(n.apple)+'">Apple</a>' : "")+
       '</div>'+
       (n.linkOnly ? '<div class="hint">Only a Google link so far. To use Waze: tap Original link, press and hold the pin, copy the GPS numbers, then tap Add GPS and paste them.</div>'
         : (n.exact ? "" : '<div class="hint">No exact GPS yet - Waze and Apple search by place name. Check the pin before you drive.</div>'))+
+      sendRow("spot", s.id)+
       '<div class="small-actions">'+
         (hasGPS(s)?'<button class="btn" data-copy="'+s.id+'">Copy GPS</button>':"")+
-        (ios?'<button class="btn" data-share="'+s.id+'">Share</button>':"")+
-        '<button class="btn" data-edit="'+s.id+'">Edit</button>'+
+                '<button class="btn" data-edit="'+s.id+'">Edit</button>'+
       '</div>'+
       ((orig||extra||src)?'<div class="small-actions">'+orig+extra+src+'</div>':"")+
       '</div>'+
@@ -685,13 +690,13 @@ function render(){
 }
 
 function renderNames(){
-  $("namesList").innerHTML = NAMES.map(function(n){
+  $("namesList").innerHTML = NAMES.map(function(n, ni){
     var go = n.spot && find(n.spot) ? '<button class="btn" data-jump="'+n.spot+'">Go to spot</button>' : "";
     return '<div class="card" id="name-'+(n.spot||"x")+'"><h3>'+esc(n.local)+'</h3>'+
       '<div class="meta"><span class="badge">'+esc(n.title)+'</span></div>'+
       '<div class="note"><b>Meaning:</b> '+esc(n.meaning)+'</div>'+
       '<div class="note"><b>The story:</b> '+esc(n.story)+'</div>'+
-      '<div class="small-actions">'+go+n.sources.map(function(s){return '<a class="btn" href="'+esc(s[1])+'" target="_blank" rel="noopener">Source: '+esc(s[0])+'</a>';}).join("")+'</div></div>';
+      sendRow("name", ni)+'<div class="small-actions">'+go+n.sources.map(function(s){return '<a class="btn" href="'+esc(s[1])+'" target="_blank" rel="noopener">Source: '+esc(s[0])+'</a>';}).join("")+'</div></div>';
   }).join("");
   $("wordsList").innerHTML = WORDS.map(function(w){
     return '<div class="card maplink"><div><b>'+esc(w[0])+'</b><div class="hint">'+esc(w[1])+'</div></div><a class="btn" style="min-width:90px" href="'+esc(w[2])+'" target="_blank" rel="noopener">Source</a></div>';
@@ -708,13 +713,14 @@ function renderEvents(){
       '<div class="note"><b>When:</b> '+esc(e.when)+'</div>'+
       '<div class="note"><b>Where:</b> '+esc(e.where)+'</div>'+
       (e.notes?'<div class="note">'+esc(e.notes)+'</div>':"")+
+      sendRow("event", EVENTS.indexOf(e))+
       '<div class="small-actions"><a class="btn primary" href="'+esc(e.link)+'" target="_blank" rel="noopener">Official info</a><a class="btn" href="'+esc(e.source)+'" target="_blank" rel="noopener">Source</a></div></div>';
   }).join("");
 }
 
 function renderRegionMaps(){
   $("regionMaps").innerHTML = REGION_MAPS.map(function(r,i){
-    return '<div class="card maplink"><div><b>'+(i+1)+'. '+esc(r[0])+'</b><div class="hint">'+esc(r[1].replace("https://",""))+'</div></div><a class="btn primary" style="min-width:90px" href="'+esc(r[1])+'" target="_blank" rel="noopener">Open</a></div>';
+    return '<div class="card maplink"><div><b>'+(i+1)+'. '+esc(r[0])+'</b><div class="hint">'+esc(r[1].replace("https://",""))+'</div></div><div style="display:flex;gap:6px"><a class="btn wa" style="min-width:46px" href="'+esc(waUrl(sendText("map",i)))+'" target="_blank" rel="noopener" aria-label="Send on WhatsApp">💬</a><a class="btn primary" style="min-width:70px" href="'+esc(r[1])+'" target="_blank" rel="noopener">Open</a></div></div>';
   }).join("");
 }
 
@@ -758,6 +764,7 @@ function renderPack(){
       '<form class="pk-add" data-sid="'+sec.id+'"><input class="f" placeholder="Add an item" enterkeyhint="done"><button class="btn primary" type="submit">Add</button></form></div>';
   }).join("") || '<div class="card"><div class="hint">This list is empty. Tap "+ Add section" or "Reset list".</div></div>';
   $("pkCount").textContent = done+" of "+tot+" packed";
+  $("pkSend").innerHTML = '<a class="btn wa" href="'+esc(waUrl(sendText("pack",pkCur)))+'" target="_blank" rel="noopener">💬 WhatsApp list</a><button class="btn" data-send="pack:'+pkCur+'">📤 Send list</button>';
   $("pkBar").style.width = (tot? Math.round(done/tot*100):0)+"%";
   $("pkUndoRow").style.display = pkUndo&&pkUndo.list===pkCur ? "" : "none";
   if (pkUndo) $("pkUndo").textContent = "Undo delete: "+(pkUndo.item?pkUndo.item.t:pkUndo.sec.title);
@@ -914,6 +921,50 @@ function copy(text){
   function fallback(){ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); toast("Copied: "+text);}catch(e){toast(text);} document.body.removeChild(ta); }
   if (navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(function(){toast("Copied: "+text);}, fallback); } else fallback();
 }
+/* ---------- send to people ---------- */
+var APP_URL = "https://thesnagtag-coder.github.io/saudi-spots/";
+function waUrl(t){ return "https://wa.me/?text="+encodeURIComponent(t); }
+function sendText(kind, id){
+  var t="";
+  if (kind==="spot"){
+    var s=find(id); if(!s) return ""; var n=navLinks(s);
+    t = "📍 "+s.name+(s.region&&s.region!=="Not set"?" ("+s.region+")":"")+"\n";
+    if (hasGPS(s)) t += "GPS: "+s.lat+", "+s.lng+"\n";
+    else if (s.plus) t += s.plus+"\n";
+    t += "Google Maps: "+n.google+"\n";
+    if (n.waze && n.exact) t += "Waze: "+n.waze+"\n";
+  } else if (kind==="event"){
+    var e=EVENTS[id]; if(!e) return "";
+    t = "🎉 "+e.name+"\nWhen: "+e.when+"\nWhere: "+e.where+"\nInfo: "+e.link+"\n";
+  } else if (kind==="name"){
+    var m=NAMES[id]; if(!m) return "";
+    t = "📖 "+m.local+" - "+m.title+"\nMeaning: "+m.meaning+"\n";
+  } else if (kind==="map"){
+    var r=REGION_MAPS[id]; if(!r) return "";
+    t = "🗺️ Wilderness map - "+r[0]+": "+r[1]+"\n";
+  } else if (kind==="pack"){
+    var L=pack[id]||[];
+    t = (id==="food"?"🍳 Camping food list":"🏕️ Camping gear list")+"\n";
+    L.forEach(function(sec){ if(!sec.items.length) return; t += "\n"+sec.title.toUpperCase()+"\n"; sec.items.forEach(function(it){ t += (it.done?"✅ ":"⬜ ")+it.t+"\n"; }); });
+  }
+  return t+"\nSent from Saudi Spots: "+APP_URL;
+}
+function sendRow(kind, id){
+  return '<div class="sendrow"><a class="btn wa" href="'+esc(waUrl(sendText(kind,id)))+'" target="_blank" rel="noopener">💬 WhatsApp</a><button class="btn" data-send="'+kind+':'+id+'">📤 Send</button></div>';
+}
+function copyMsg(text){
+  function done(){ toast("Message copied - paste it anywhere"); }
+  function fallback(){ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); done();}catch(e){toast("Could not copy");} document.body.removeChild(ta); }
+  if (navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(done, fallback); } else fallback();
+}
+function sendIt(key){
+  var k=key.split(":"), kind=k[0], id=k.slice(1).join(":");
+  if (kind==="event"||kind==="name"||kind==="map") id=+id;
+  var text=sendText(kind,id); if(!text) return;
+  if (navigator.share){ navigator.share({text:text}).catch(function(){}); } else copyMsg(text);
+}
+document.addEventListener("click", function(e){ var b=e.target.closest&&e.target.closest("[data-send]"); if(b){ sendIt(b.dataset.send); } });
+
 function share(s){
   var url = navLinks(s).google;
   var text = s.name + (hasGPS(s) ? " - GPS "+s.lat+", "+s.lng : (s.plus?" - "+s.plus:""));
