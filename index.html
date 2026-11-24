@@ -1067,7 +1067,7 @@ function sendText(kind, id){
     t = (id==="food"?"🍳 Camping food list":"🏕️ Camping gear list")+"\n";
     L.forEach(function(sec){ if(!sec.items.length) return; t += "\n"+sec.title.toUpperCase()+"\n"; sec.items.forEach(function(it){ t += (it.done?"✅ ":"⬜ ")+it.t+"\n"; }); });
   }
-  return t+"\nSent from Saudi Spots: "+APP_URL;
+  return t.replace(/\n+$/,"");
 }
 function sendRow(kind, id){
   return '<div class="sendrow"><a class="btn wa" href="'+esc(waUrl(sendText(kind,id)))+'" target="_blank" rel="noopener">💬 WhatsApp</a><button class="btn" data-send="'+kind+':'+id+'">📤 Send</button></div>';
